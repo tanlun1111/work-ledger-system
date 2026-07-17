@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>台账管理 - 警情案件工作台账登记系统</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--color-gray-50);
+    }
+    .table-row-hover:hover {
+      background-color: var(--color-gray-50);
+    }
+    .col-sticky {
+      position: sticky;
+      right: 0;
+      background: white;
+      box-shadow: -4px 0 8px -4px rgba(0,0,0,0.05);
+    }
+    .text-ellipsis-one {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- 顶部导航栏 -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[var(--color-primary-800)] text-white shadow-md">
+    <div class="h-14 flex items-center justify-between px-6">
+      <!-- 左侧：Logo + 系统名称 -->
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded bg-white/15 flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <h1 class="text-lg font-semibold tracking-wide">警情案件工作台账登记系统</h1>
+      </div>
+      <!-- 中间：主导航 -->
+      <nav class="flex items-center gap-1" data-nav="main">
+        <a href="#" data-nav-key="ledger" data-dom-id="nav-ledger-list"
+           class="px-4 py-1.5 rounded-md text-sm font-medium bg-white/15 text-white transition-colors">
+          台账管理
+        </a>
+        <a href="#" data-nav-key="stats"
+           class="px-4 py-1.5 rounded-md text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors">
+          统计分析
+        </a>
+        <a href="#" data-nav-key="settings"
+           class="px-4 py-1.5 rounded-md text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors">
+          系统设置
+        </a>
+      </nav>
+      <!-- 右侧：用户信息 -->
+      <div class="flex items-center gap-3">
+        <button class="p-2 rounded-md text-white/80 hover:bg-white/10 hover:text-white transition-colors" title="通知">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+        <!-- 用户下拉菜单 -->
+        <div class="relative pl-3 border-l border-white/20" data-user-dropdown>
+          <button class="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-white/10 transition-colors" data-dom-id="btn-user-menu">
+            <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-medium">
+              管
+            </div>
+            <div class="text-left hidden sm:block">
+              <div class="text-sm font-medium">管理员</div>
+              <div class="text-xs text-white/60">系统管理员</div>
+            </div>
+            <svg class="w-4 h-4 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+          <!-- 下拉菜单（默认展开，展示设计效果） -->
+          <div class="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50">
+            <div class="px-3 py-2 border-b border-gray-100">
+              <div class="text-sm font-medium text-gray-900">管理员</div>
+              <div class="text-xs text-gray-500">admin@example.com</div>
+            </div>
+            <button data-dom-id="btn-change-password"
+               class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              修改密码
+            </button>
+            <div class="border-t border-gray-100 my-1"></div>
+            <button data-dom-id="btn-logout"
+               class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              退出登录
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="flex-1 pt-14">
+    <div class="max-w-7xl mx-auto px-6 py-6">
+
+      <!-- 页面标题区 -->
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-semibold text-[var(--color-gray-900)]">台账管理</h2>
+          <p class="text-sm text-[var(--color-gray-500)] mt-1">警情案件工作台账列表</p>
+        </div>
+        <button data-dom-id="btn-add-ledger"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-primary-800)] text-white text-sm font-medium rounded-md hover:bg-[var(--color-primary-700)] transition-colors shadow-sm">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          新增台账
+        </button>
+      </div>
+
+      <!-- 统计摘要行 -->
+      <div class="grid grid-cols-4 gap-4 mb-6">
+        <!-- 总台账数 -->
+        <div class="bg-white border border-[var(--color-gray-200)] rounded-lg p-4 flex items-center gap-4 shadow-sm">
+          <div class="w-10 h-10 rounded-lg bg-[var(--color-primary-50)] flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-[var(--color-primary-700)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-[var(--color-gray-900)]">156</div>
+            <div class="text-xs text-[var(--color-gray-500)] mt-0.5">总台账数</div>
+          </div>
+        </div>
+        <!-- 未办结 -->
+        <div class="bg-white border border-[var(--color-gray-200)] rounded-lg p-4 flex items-center gap-4 shadow-sm">
+          <div class="w-10 h-10 rounded-lg bg-[var(--state-warning-bg)] flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-[var(--state-warning)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-[var(--state-warning)]">23</div>
+            <div class="text-xs text-[var(--color-gray-500)] mt-0.5">未办结</div>
+          </div>
+        </div>
+        <!-- 已办结 -->
+        <div class="bg-white border border-[var(--color-gray-200)] rounded-lg p-4 flex items-center gap-4 shadow-sm">
+          <div class="w-10 h-10 rounded-lg bg-[var(--state-success-bg)] flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-[var(--state-success)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-[var(--state-success)]">133</div>
+            <div class="text-xs text-[var(--color-gray-500)] mt-0.5">已办结</div>
+          </div>
+        </div>
+        <!-- 已提级 -->
+        <div class="bg-white border border-[var(--color-gray-200)] rounded-lg p-4 flex items-center gap-4 shadow-sm">
+          <div class="w-10 h-10 rounded-lg bg-[var(--state-error-bg)] flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-[var(--state-error)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-[var(--state-error)]">8</div>
+            <div class="text-xs text-[var(--color-gray-500)] mt-0.5">已提级</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 搜索筛选栏 -->
+      <div class="bg-white border border-[var(--color-gray-200)] rounded-lg p-5 mb-6 shadow-sm">
+        <!-- 第一行 -->
+        <div class="grid grid-cols-4 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-gray-700)] mb-1.5">关键词搜索</label>
+            <div class="relative">
+              <input type="text" placeholder="搜索序号/人员/基本情况"
+                     class="w-full px-3 py-2 pl-9 border border-[var(--color-gray-300)] rounded-md text-sm text-[var(--color-gray-900)] placeholder-[var(--color-gray-400)] focus:outline-none focus:border-[var(--color-primary-600)] focus:ring-1 focus:ring-[var(--color-primary-600)] transition-colors">
+              <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-gray-400)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-gray-700)] mb-1.5">辖区</label>
+            <div class="relative">
+              <select class="w-full px-3 py-2 pr-8 border border-[var(--color-gray-300)] rounded-md text-sm text-[var(--color-gray-900)] bg-white appearance-none focus:outline-none focus:border-[var(--color-primary-600)] focus:ring-1 focus:ring-[var(--color-primary-600)] transition-colors">
+                <option>全部</option>
+                <option>朝阳派出所</option>
+                <option>海淀派出所</option>
+                <option>西城派出所</option>
+                <option>东城派出所</option>
+                <option>丰台派出所</option>
+                <option>石景山派出所</option>
+              </select>
+              <svg class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-gray-400)] pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-gray-700)] mb-1.5">案件类别</label>
+            <div class="relative">
+              <select class="w-full px-3 py-2 pr-8 border border-[var(--color-gray-300)] rounded-md text-sm text-[var(--color-gray-900)] bg-white appearance-none focus:outline-none focus:border-[var(--color-primary-600)] focus:ring-1 focus:ring-[var(--color-primary-600)] transition-colors">
+                <option>全部</option>
+                <option>治安</option>
+                <option>刑事</option>
+                <option>交通</option>
+                <option>求助</option>
+              </select>
+              <svg class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-gray-400)] pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-gray-700)] mb-1.5">信息来源</label>
+            <div class="relative">
+              <select class="w-full px-3 py-2 pr-8 border border-[var(--color-gray-300)] rounded-md text-sm text-[var(--color-gray-900)] bg-white appearance-none focus:outline-none focus:border-[var(--color-primary-600)] focus:ring-1 focus:ring-[var(--color-primary-600)] transition-colors">
+                <option>全部</option>
+                <option>110接报</option>
+                <option>群众报案</option>
+                <option>上级交办</option>
+                <option>其他部门移交</option>
+              </select>
+              <svg class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-gray-400)] pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <!-- 第二行 -->
+        <div class="grid grid-cols-4 gap-4 mb-5">
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-gray-700)] mb-1.5">办结状态</label>
+            <div class="relative">
+              <select class="w-full px-3 py-2 pr-8 border border-[var(--color-gray-300)] rounded-md text-sm text-[var(--color-gray-900)] bg-white appearance-none focus:outline-none focus:border-[var(--color-primary-600)] focus:ring-1 focus:ring-[var(--color-primary-600)] transition-colors">
+                <option>全部</option>
+                <option>已办结</option>
+                <option>未办结</option>
+              </select>
+              <svg class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-gray-400)] pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-gray-700)] mb-1.5">提级状态</label>
+            <div class="relative">
+              <select class="w-full px-3 py-2 pr-8 border border-[var(--color-gray-300)] rounded-md text-sm text-[var(--color-gray-900)] bg-white appearance-none focus:outline-none focus:border-[var(--color-primary-600)] focus:ring-1 focus:ring-[var(--color-primary-600)] transition-colors">
+                <option>全部</option>
+                <option>已提级</option>
+                <option>未提级</option>
+              </select>
+              <svg class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-gray-400)] pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-gray-700)] mb-1.5">发生时间起</label>
+            <div class="relative">
+              <input type="date"
+                     class="w-full px-3 py-2 pr-8 border border-[var(--color-gray-300)] rounded-md text-sm text-[var(--color-gray-900)] focus:outline-none focus:border-[var(--color-primary-600)] focus:ring-1 focus:ring-[var(--color-primary-600)] transition-colors">
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-gray-700)] mb-1.5">发生时间止</label>
+            <div class="relative">
+              <input type="date"
+                     class="w-full px-3 py-2 pr-8 border border-[var(--color-gray-300)] rounded-md text-sm text-[var(--color-gray-900)] focus:outline-none focus:border-[var(--color-primary-600)] focus:ring-1 focus:ring-[var(--color-primary-600)] transition-colors">
+            </div>
+          </div>
+        </div>
+        <!-- 底部按钮行 -->
+        <div class="flex items-center justify-end gap-3">
+          <button class="px-4 py-2 border border-[var(--color-gray-300)] text-[var(--color-gray-600)] text-sm font-medium rounded-md hover:bg-[var(--color-gray-50)] transition-colors">
+            重置
+          </button>
+          <button class="px-4 py-2 bg-[var(--color-primary-800)] text-white text-sm font-medium rounded-md hover:bg-[var(--color-primary-700)] transition-colors shadow-sm">
+            搜索
+          </button>
+        </div>
+      </div>
+
+      <!-- 数据表格 -->
+      <div class="bg-white border border-[var(--color-gray-200)] rounded-lg shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-[var(--color-gray-100)] text-[var(--color-gray-700)] text-[13px] font-medium">
+                <th class="px-3 py-3 text-left font-medium" style="width:130px;">序号</th>
+                <th class="px-3 py-3 text-left font-medium" style="width:70px;">直守人员</th>
+                <th class="px-3 py-3 text-left font-medium" style="width:140px;">发生时间</th>
+                <th class="px-3 py-3 text-left font-medium" style="width:100px;">辖区</th>
+                <th class="px-3 py-3 text-left font-medium" style="width:90px;">案件类别</th>
+                <th class="px-3 py-3 text-left font-medium" style="width:100px;">信息来源</th>
+                <th class="px-3 py-3 text-left font-medium" style="width:200px;">基本情况</th>
+                <th class="px-3 py-3 text-left font-medium" style="width:90px;">办结状态</th>
+                <th class="px-3 py-3 text-left font-medium" style="width:90px;">提级状态</th>
+                <th class="px-3 py-3 text-center font-medium col-sticky" style="width:140px;">操作</th>
+              </tr>
+            </thead>
+            <tbody class="text-[var(--color-gray-700)]">
+              <!-- 第1行 -->
+              <tr class="border-t border-[var(--color-gray-100)] table-row-hover transition-colors">
+                <td class="px-3 py-3">
+                  <a href="#" data-dom-id="link-ledger-detail" class="text-[var(--color-primary-700)] hover:text-[var(--color-primary-600)] font-medium">JQ-20260715-001</a>
+                </td>
+                <td class="px-3 py-3">张三</td>
+                <td class="px-3 py-3 text-[var(--color-gray-600)]">2026-07-15 14:30</td>
+                <td class="px-3 py-3">朝阳派出所</td>
+                <td class="px-3 py-3">治安</td>
+                <td class="px-3 py-3">110接报</td>
+                <td class="px-3 py-3">
+                  <div class="text-ellipsis-one" title="某小区邻里纠纷，双方发生肢体冲突...">某小区邻里纠纷，双方发生肢体冲突...</div>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-[var(--state-warning)] rounded-sm">未办结</span>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-[var(--color-gray-400)] rounded-sm">未提级</span>
+                </td>
+                <td class="px-3 py-3 text-center col-sticky">
+                  <div class="flex items-center justify-center gap-1">
+                    <button data-dom-id="btn-view-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors" title="查看">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </button>
+                    <button data-dom-id="btn-edit-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors" title="编辑">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button data-dom-id="btn-delete-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--state-error)] hover:bg-[var(--state-error-bg)] transition-colors" title="删除">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6"/>
+                        <path d="M14 11v6"/>
+                        <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <!-- 第2行 -->
+              <tr class="border-t border-[var(--color-gray-100)] table-row-hover transition-colors">
+                <td class="px-3 py-3">
+                  <a href="#" data-dom-id="link-ledger-detail" class="text-[var(--color-primary-700)] hover:text-[var(--color-primary-600)] font-medium">JQ-20260715-002</a>
+                </td>
+                <td class="px-3 py-3">李四</td>
+                <td class="px-3 py-3 text-[var(--color-gray-600)]">2026-07-15 10:15</td>
+                <td class="px-3 py-3">海淀派出所</td>
+                <td class="px-3 py-3">刑事</td>
+                <td class="px-3 py-3">群众报案</td>
+                <td class="px-3 py-3">
+                  <div class="text-ellipsis-one" title="盗窃案，嫌疑人已被控制...">盗窃案，嫌疑人已被控制...</div>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-[var(--state-success)] rounded-sm">已办结</span>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-[var(--color-gray-400)] rounded-sm">未提级</span>
+                </td>
+                <td class="px-3 py-3 text-center col-sticky">
+                  <div class="flex items-center justify-center gap-1">
+                    <button data-dom-id="btn-view-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors" title="查看">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </button>
+                    <button data-dom-id="btn-edit-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors" title="编辑">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button data-dom-id="btn-delete-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--state-error)] hover:bg-[var(--state-error-bg)] transition-colors" title="删除">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6"/>
+                        <path d="M14 11v6"/>
+                        <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <!-- 第3行 -->
+              <tr class="border-t border-[var(--color-gray-100)] table-row-hover transition-colors">
+                <td class="px-3 py-3">
+                  <a href="#" data-dom-id="link-ledger-detail" class="text-[var(--color-primary-700)] hover:text-[var(--color-primary-600)] font-medium">JQ-20260714-008</a>
+                </td>
+                <td class="px-3 py-3">王五</td>
+                <td class="px-3 py-3 text-[var(--color-gray-600)]">2026-07-14 22:45</td>
+                <td class="px-3 py-3">西城派出所</td>
+                <td class="px-3 py-3">交通</td>
+                <td class="px-3 py-3">110接报</td>
+                <td class="px-3 py-3">
+                  <div class="text-ellipsis-one" title="交通事故，两车追尾无人伤亡...">交通事故，两车追尾无人伤亡...</div>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-[var(--state-success)] rounded-sm">已办结</span>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-[var(--color-gray-400)] rounded-sm">未提级</span>
+                </td>
+                <td class="px-3 py-3 text-center col-sticky">
+                  <div class="flex items-center justify-center gap-1">
+                    <button data-dom-id="btn-view-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors" title="查看">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </button>
+                    <button data-dom-id="btn-edit-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors" title="编辑">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button data-dom-id="btn-delete-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--state-error)] hover:bg-[var(--state-error-bg)] transition-colors" title="删除">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6"/>
+                        <path d="M14 11v6"/>
+                        <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <!-- 第4行 -->
+              <tr class="border-t border-[var(--color-gray-100)] table-row-hover transition-colors">
+                <td class="px-3 py-3">
+                  <a href="#" data-dom-id="link-ledger-detail" class="text-[var(--color-primary-700)] hover:text-[var(--color-primary-600)] font-medium">JQ-20260714-007</a>
+                </td>
+                <td class="px-3 py-3">赵六</td>
+                <td class="px-3 py-3 text-[var(--color-gray-600)]">2026-07-14 18:20</td>
+                <td class="px-3 py-3">东城派出所</td>
+                <td class="px-3 py-3">求助</td>
+                <td class="px-3 py-3">上级交办</td>
+                <td class="px-3 py-3">
+                  <div class="text-ellipsis-one" title="老人走失求助，已协助家属找回...">老人走失求助，已协助家属找回...</div>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-[var(--state-success)] rounded-sm">已办结</span>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-[var(--color-gray-400)] rounded-sm">未提级</span>
+                </td>
+                <td class="px-3 py-3 text-center col-sticky">
+                  <div class="flex items-center justify-center gap-1">
+                    <button data-dom-id="btn-view-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors" title="查看">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </button>
+                    <button data-dom-id="btn-edit-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors" title="编辑">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button data-dom-id="btn-delete-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--state-error)] hover:bg-[var(--state-error-bg)] transition-colors" title="删除">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6"/>
+                        <path d="M14 11v6"/>
+                        <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <!-- 第5行 -->
+              <tr class="border-t border-[var(--color-gray-100)] table-row-hover transition-colors">
+                <td class="px-3 py-3">
+                  <a href="#" data-dom-id="link-ledger-detail" class="text-[var(--color-primary-700)] hover:text-[var(--color-primary-600)] font-medium">JQ-20260714-006</a>
+                </td>
+                <td class="px-3 py-3">钱七</td>
+                <td class="px-3 py-3 text-[var(--color-gray-600)]">2026-07-14 09:30</td>
+                <td class="px-3 py-3">朝阳派出所</td>
+                <td class="px-3 py-3">刑事</td>
+                <td class="px-3 py-3">其他部门移交</td>
+                <td class="px-3 py-3">
+                  <div class="text-ellipsis-one" title="重大诈骗案件，涉案金额较大...">重大诈骗案件，涉案金额较大...</div>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-[var(--state-warning)] rounded-sm">未办结</span>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-[var(--state-error)] rounded-sm">已提级</span>
+                </td>
+                <td class="px-3 py-3 text-center col-sticky">
+                  <div class="flex items-center justify-center gap-1">
+                    <button data-dom-id="btn-view-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors" title="查看">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </button>
+                    <button data-dom-id="btn-edit-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors" title="编辑">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button data-dom-id="btn-delete-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--state-error)] hover:bg-[var(--state-error-bg)] transition-colors" title="删除">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6"/>
+                        <path d="M14 11v6"/>
+                        <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <!-- 第6行 -->
+              <tr class="border-t border-[var(--color-gray-100)] table-row-hover transition-colors">
+                <td class="px-3 py-3">
+                  <a href="#" data-dom-id="link-ledger-detail" class="text-[var(--color-primary-700)] hover:text-[var(--color-primary-600)] font-medium">JQ-20260713-012</a>
+                </td>
+                <td class="px-3 py-3">孙八</td>
+                <td class="px-3 py-3 text-[var(--color-gray-600)]">2026-07-13 16:00</td>
+                <td class="px-3 py-3">丰台派出所</td>
+                <td class="px-3 py-3">治安</td>
+                <td class="px-3 py-3">群众报案</td>
+                <td class="px-3 py-3">
+                  <div class="text-ellipsis-one" title="商铺失窃，监控已调取...">商铺失窃，监控已调取...</div>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-[var(--state-warning)] rounded-sm">未办结</span>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-[var(--color-gray-400)] rounded-sm">未提级</span>
+                </td>
+                <td class="px-3 py-3 text-center col-sticky">
+                  <div class="flex items-center justify-center gap-1">
+                    <button data-dom-id="btn-view-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors" title="查看">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </button>
+                    <button data-dom-id="btn-edit-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors" title="编辑">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button data-dom-id="btn-delete-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--state-error)] hover:bg-[var(--state-error-bg)] transition-colors" title="删除">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6"/>
+                        <path d="M14 11v6"/>
+                        <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <!-- 第7行 -->
+              <tr class="border-t border-[var(--color-gray-100)] table-row-hover transition-colors">
+                <td class="px-3 py-3">
+                  <a href="#" data-dom-id="link-ledger-detail" class="text-[var(--color-primary-700)] hover:text-[var(--color-primary-600)] font-medium">JQ-20260713-011</a>
+                </td>
+                <td class="px-3 py-3">周九</td>
+                <td class="px-3 py-3 text-[var(--color-gray-600)]">2026-07-13 11:20</td>
+                <td class="px-3 py-3">海淀派出所</td>
+                <td class="px-3 py-3">治安</td>
+                <td class="px-3 py-3">110接报</td>
+                <td class="px-3 py-3">
+                  <div class="text-ellipsis-one" title="酒吧扰民投诉，已出警处理...">酒吧扰民投诉，已出警处理...</div>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-[var(--state-success)] rounded-sm">已办结</span>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-[var(--color-gray-400)] rounded-sm">未提级</span>
+                </td>
+                <td class="px-3 py-3 text-center col-sticky">
+                  <div class="flex items-center justify-center gap-1">
+                    <button data-dom-id="btn-view-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors" title="查看">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </button>
+                    <button data-dom-id="btn-edit-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors" title="编辑">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button data-dom-id="btn-delete-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--state-error)] hover:bg-[var(--state-error-bg)] transition-colors" title="删除">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6"/>
+                        <path d="M14 11v6"/>
+                        <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <!-- 第8行 -->
+              <tr class="border-t border-[var(--color-gray-100)] table-row-hover transition-colors">
+                <td class="px-3 py-3">
+                  <a href="#" data-dom-id="link-ledger-detail" class="text-[var(--color-primary-700)] hover:text-[var(--color-primary-600)] font-medium">JQ-20260713-010</a>
+                </td>
+                <td class="px-3 py-3">吴十</td>
+                <td class="px-3 py-3 text-[var(--color-gray-600)]">2026-07-13 08:45</td>
+                <td class="px-3 py-3">石景山派出所</td>
+                <td class="px-3 py-3">求助</td>
+                <td class="px-3 py-3">110接报</td>
+                <td class="px-3 py-3">
+                  <div class="text-ellipsis-one" title="儿童走失，两小时后安全找回...">儿童走失，两小时后安全找回...</div>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-[var(--state-success)] rounded-sm">已办结</span>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-[var(--color-gray-400)] rounded-sm">未提级</span>
+                </td>
+                <td class="px-3 py-3 text-center col-sticky">
+                  <div class="flex items-center justify-center gap-1">
+                    <button data-dom-id="btn-view-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors" title="查看">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </button>
+                    <button data-dom-id="btn-edit-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--color-primary-600)] hover:bg-[var(--color-primary-50)] transition-colors" title="编辑">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                    </button>
+                    <button data-dom-id="btn-delete-ledger" class="p-1.5 rounded text-[var(--color-gray-500)] hover:text-[var(--state-error)] hover:bg-[var(--state-error-bg)] transition-colors" title="删除">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6"/>
+                        <path d="M14 11v6"/>
+                        <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 分页导航 -->
+        <div class="flex items-center justify-between px-4 py-3 border-t border-[var(--color-gray-100)]">
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <select class="appearance-none px-3 py-1.5 pr-8 border border-[var(--color-gray-300)] rounded-md text-sm text-[var(--color-gray-700)] bg-white focus:outline-none focus:border-[var(--color-primary-600)] transition-colors">
+                <option>20条/页</option>
+                <option>50条/页</option>
+                <option>100条/页</option>
+              </select>
+              <svg class="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-gray-400)] pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+            <span class="text-sm text-[var(--color-gray-500)]">共 156 条</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <button class="px-3 py-1.5 border border-[var(--color-gray-300)] text-[var(--color-gray-600)] text-sm rounded-md hover:bg-[var(--color-gray-50)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+            <button class="w-8 h-8 flex items-center justify-center text-sm font-medium text-white bg-[var(--color-primary-800)] rounded-md">1</button>
+            <button class="w-8 h-8 flex items-center justify-center text-sm text-[var(--color-gray-600)] hover:bg-[var(--color-gray-50)] rounded-md transition-colors">2</button>
+            <button class="w-8 h-8 flex items-center justify-center text-sm text-[var(--color-gray-600)] hover:bg-[var(--color-gray-50)] rounded-md transition-colors">3</button>
+            <button class="w-8 h-8 flex items-center justify-center text-sm text-[var(--color-gray-600)] hover:bg-[var(--color-gray-50)] rounded-md transition-colors">4</button>
+            <button class="w-8 h-8 flex items-center justify-center text-sm text-[var(--color-gray-600)] hover:bg-[var(--color-gray-50)] rounded-md transition-colors">5</button>
+            <span class="px-2 text-sm text-[var(--color-gray-400)]">...</span>
+            <button class="w-8 h-8 flex items-center justify-center text-sm text-[var(--color-gray-600)] hover:bg-[var(--color-gray-50)] rounded-md transition-colors">8</button>
+            <button class="px-3 py-1.5 border border-[var(--color-gray-300)] text-[var(--color-gray-600)] text-sm rounded-md hover:bg-[var(--color-gray-50)] transition-colors">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- 删除确认弹窗（默认显示） -->
+  <div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-lg shadow-xl w-[440px] overflow-hidden">
+      <div class="px-6 py-4 border-b border-[var(--color-gray-100)]">
+        <h3 class="text-base font-semibold text-[var(--color-gray-900)]">确认删除</h3>
+      </div>
+      <div class="px-6 py-5">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-full bg-[var(--state-error-bg)] flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-[var(--state-error)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <div class="flex-1 pt-0.5">
+            <p class="text-sm text-[var(--color-gray-700)] leading-relaxed">
+              确定要删除序号为 <span class="font-medium text-[var(--color-gray-900)]">JQ-20260715-001</span> 的台账记录吗？此操作不可撤销。
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="px-6 py-4 bg-[var(--color-gray-50)] flex items-center justify-end gap-3">
+        <button class="px-4 py-2 border border-[var(--color-gray-300)] text-[var(--color-gray-600)] text-sm font-medium rounded-md hover:bg-white transition-colors">
+          取消
+        </button>
+        <button class="px-4 py-2 bg-[var(--state-error)] text-white text-sm font-medium rounded-md hover:bg-[#b91c1c] transition-colors shadow-sm">
+          确认删除
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 修改密码弹窗（默认显示，展示设计效果） -->
+  <div data-dom-id="modal-change-password" class="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-lg shadow-xl w-[400px] overflow-hidden">
+      <div class="px-5 py-4 border-b border-[var(--color-gray-100)] flex items-center justify-between">
+        <h3 class="text-base font-semibold text-[var(--color-gray-900)]">修改密码</h3>
+        <button class="p-1 rounded hover:bg-[var(--color-gray-100)] text-[var(--color-gray-400)] hover:text-[var(--color-gray-600)] transition-colors">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="px-5 py-5 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-[var(--color-gray-700)] mb-1.5">旧密码</label>
+          <div class="relative">
+            <input type="password" placeholder="请输入旧密码"
+              class="w-full px-3 py-2 pr-10 border border-[var(--color-gray-200)] rounded-md text-sm focus:outline-none focus:border-[var(--color-primary-600)] focus:ring-2 focus:ring-[var(--color-primary-100)] transition-all">
+            <button class="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-gray-400)] hover:text-[var(--color-gray-600)]">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-[var(--color-gray-700)] mb-1.5">新密码 <span class="text-[var(--color-gray-400)] font-normal">（最少6位）</span></label>
+          <div class="relative">
+            <input type="password" placeholder="请输入新密码"
+              class="w-full px-3 py-2 pr-10 border border-[var(--color-gray-200)] rounded-md text-sm focus:outline-none focus:border-[var(--color-primary-600)] focus:ring-2 focus:ring-[var(--color-primary-100)] transition-all">
+            <button class="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-gray-400)] hover:text-[var(--color-gray-600)]">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+          <p class="mt-1 text-xs text-[var(--color-gray-400)]">密码长度至少6位，建议包含字母和数字</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-[var(--color-gray-700)] mb-1.5">确认新密码</label>
+          <div class="relative">
+            <input type="password" placeholder="请再次输入新密码"
+              class="w-full px-3 py-2 pr-10 border border-[var(--color-gray-200)] rounded-md text-sm focus:outline-none focus:border-[var(--color-primary-600)] focus:ring-2 focus:ring-[var(--color-primary-100)] transition-all">
+          </div>
+        </div>
+      </div>
+      <div class="px-5 py-3.5 bg-[var(--color-gray-50)] flex items-center justify-end gap-2">
+        <button class="px-4 py-2 border border-[var(--color-gray-300)] text-[var(--color-gray-600)] text-sm font-medium rounded-md hover:bg-white transition-colors">
+          取消
+        </button>
+        <button class="px-4 py-2 bg-[var(--color-primary-700)] text-white text-sm font-medium rounded-md hover:bg-[var(--color-primary-800)] transition-colors shadow-sm">
+          确认修改
+        </button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

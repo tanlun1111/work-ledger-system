@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新增台账 - 警情案件工作台账登记系统</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    /* 表单输入框统一样式 */
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      background-color: #ffffff;
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      font-size: 14px;
+      color: var(--color-gray-900);
+      transition: border-color 0.15s, box-shadow 0.15s;
+      font-family: var(--font-sans);
+    }
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--color-primary-800);
+      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+    }
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+      color: var(--color-gray-400);
+    }
+
+    /* 表单标签 */
+    .form-label {
+      display: block;
+      font-size: 13px;
+      color: var(--color-gray-700);
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+    .form-label .required {
+      color: var(--state-error);
+      margin-left: 2px;
+    }
+
+    /* 折叠面板 */
+    .accordion-panel {
+      background: #ffffff;
+      border: 1px solid var(--color-gray-200);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .accordion-panel + .accordion-panel {
+      margin-top: 12px;
+    }
+    .accordion-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.15s;
+    }
+    .accordion-header:hover {
+      background-color: var(--color-gray-50);
+    }
+    .accordion-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--color-gray-900);
+    }
+    .accordion-title .required-star {
+      color: var(--state-error);
+      font-size: 16px;
+      line-height: 1;
+    }
+    .accordion-arrow {
+      transition: transform 0.2s;
+      color: var(--color-gray-500);
+    }
+    .accordion-panel.collapsed .accordion-arrow {
+      transform: rotate(-90deg);
+    }
+    .accordion-panel.collapsed .accordion-body {
+      display: none;
+    }
+    .accordion-body {
+      padding: 0 20px 20px;
+      border-top: 1px solid var(--color-gray-100);
+      padding-top: 20px;
+    }
+
+    /* 表单栅格 */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px 20px;
+    }
+    .form-grid .col-full {
+      grid-column: 1 / -1;
+    }
+    .form-grid .col-1 {
+      grid-column: span 1;
+    }
+
+    /* 字符计数 */
+    .char-count {
+      text-align: right;
+      font-size: 12px;
+      color: var(--color-gray-400);
+      margin-top: 4px;
+    }
+
+    /* 序号带自动生成按钮 */
+    .input-with-btn {
+      position: relative;
+    }
+    .input-with-btn .auto-btn {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      color: var(--color-primary-700);
+      background: var(--color-primary-50);
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 0.15s;
+    }
+    .input-with-btn .auto-btn:hover {
+      background: var(--color-primary-100);
+    }
+
+    /* 上传区域 */
+    .upload-area {
+      border: 2px dashed var(--color-gray-300);
+      border-radius: var(--radius-lg);
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background-color 0.15s;
+      background-color: var(--color-gray-50);
+    }
+    .upload-area:hover {
+      border-color: var(--color-primary-600);
+      background-color: var(--color-primary-50);
+    }
+    .upload-area .upload-icon {
+      color: var(--color-gray-400);
+      margin-bottom: 8px;
+    }
+    .upload-area .upload-text {
+      font-size: 14px;
+      color: var(--color-gray-700);
+      font-weight: 500;
+    }
+    .upload-area .upload-hint {
+      font-size: 12px;
+      color: var(--color-gray-500);
+      margin-top: 4px;
+    }
+
+    /* 图片预览网格 */
+    .image-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 96px);
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .image-preview-item {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--color-gray-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .image-preview-item .delete-btn {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--state-error);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      border: 2px solid white;
+      z-index: 1;
+    }
+    .image-preview-item .placeholder-icon {
+      color: var(--color-gray-400);
+    }
+
+    /* 开关组件 */
+    .form-switch {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+    .form-switch .switch-track {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      border-radius: 9999px;
+      background: var(--color-gray-300);
+      transition: background-color 0.2s;
+      flex-shrink: 0;
+    }
+    .form-switch .switch-thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: white;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    .form-switch.active .switch-track {
+      background: var(--color-primary-700);
+    }
+    .form-switch.active .switch-thumb {
+      transform: translateX(18px);
+    }
+    .form-switch .switch-label {
+      font-size: 14px;
+      color: var(--color-gray-700);
+    }
+
+    /* 底部操作栏 */
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--color-gray-200);
+    }
+    .btn-cancel {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border: 1px solid var(--color-gray-300);
+      border-radius: var(--radius-md);
+      background: white;
+      color: var(--color-gray-600);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-cancel:hover {
+      border-color: var(--color-gray-400);
+      color: var(--color-gray-800);
+      background: var(--color-gray-50);
+    }
+    .btn-submit {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 24px;
+      border: none;
+      border-radius: var(--radius-md);
+      background: var(--color-primary-800);
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.15s;
+    }
+    .btn-submit:hover {
+      background: var(--color-primary-700);
+    }
+    .btn-submit .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* 面包屑 */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--color-gray-500);
+      margin-bottom: 12px;
+    }
+    .breadcrumb a {
+      color: var(--color-gray-500);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .breadcrumb a:hover {
+      color: var(--color-primary-700);
+    }
+    .breadcrumb .separator {
+      color: var(--color-gray-400);
+    }
+    .breadcrumb .current {
+      color: var(--color-gray-800);
+    }
+
+    /* 选择框下拉箭头 */
+    select.form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+      cursor: pointer;
+    }
+
+    /* datetime-local 调整 */
+    input[type="datetime-local"].form-input {
+      padding-right: 8px;
+    }
+
+    /* textarea 调整 */
+    .form-textarea {
+      resize: vertical;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] flex flex-col min-h-screen">
+
+  <!-- 顶部导航栏 -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[var(--color-primary-800)] text-white shadow-md">
+    <div class="h-14 flex items-center justify-between px-6">
+      <!-- 左侧：Logo + 系统名称 -->
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded bg-white/15 flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <h1 class="text-lg font-semibold tracking-wide">警情案件工作台账登记系统</h1>
+      </div>
+
+      <!-- 中间：主导航 -->
+      <nav class="flex items-center gap-1" data-nav="main">
+        <a href="#" data-nav-key="ledger" data-dom-id="nav-ledger-list"
+           class="px-4 py-1.5 rounded-md text-sm font-medium bg-white/15 text-white transition-colors">
+          台账管理
+        </a>
+        <a href="#" data-nav-key="stats"
+           class="px-4 py-1.5 rounded-md text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors">
+          统计分析
+        </a>
+        <a href="#" data-nav-key="settings"
+           class="px-4 py-1.5 rounded-md text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors">
+          系统设置
+        </a>
+      </nav>
+
+      <!-- 右侧：用户信息 -->
+      <div class="flex items-center gap-3">
+        <button class="p-2 rounded-md text-white/80 hover:bg-white/10 hover:text-white transition-colors" title="通知">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+        <div class="flex items-center gap-2 pl-3 border-l border-white/20">
+          <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-medium">
+            管
+          </div>
+          <span class="text-sm">管理员</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="flex-1 pt-14">
+    <div class="max-w-5xl mx-auto px-6 py-6">
+
+      <!-- 面包屑导航 -->
+      <div class="breadcrumb">
+        <a href="#">
+          <svg class="w-4 h-4 inline-block align-middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </a>
+        <a href="#">台账管理</a>
+        <span class="separator">/</span>
+        <span class="current">新增台账</span>
+      </div>
+
+      <!-- 页面标题区 -->
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold text-[var(--color-gray-900)]">新增台账</h2>
+        <p class="text-sm text-[var(--color-gray-500)] mt-1">请填写台账相关信息，带 <span class="text-[var(--state-error)]">*</span> 号为必填项</p>
+      </div>
+
+      <!-- 面板一：基本信息（默认展开） -->
+      <div class="accordion-panel" data-panel="basic">
+        <div class="accordion-header" onclick="togglePanel(this)">
+          <div class="accordion-title">
+            <span class="required-star">*</span>
+            <span>基本信息</span>
+          </div>
+          <svg class="accordion-arrow w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <div class="accordion-body">
+          <div class="form-grid">
+            <!-- 第一行 -->
+            <div class="form-item">
+              <label class="form-label">序号</label>
+              <div class="input-with-btn">
+                <input type="text" class="form-input pr-16" placeholder="留空则自动生成">
+                <span class="auto-btn" onclick="event.stopPropagation(); autoGenerateSerial()">自动生成</span>
+              </div>
+            </div>
+            <div class="form-item">
+              <label class="form-label">直守人员 <span class="required">*</span></label>
+              <input type="text" class="form-input" value="张三" placeholder="请输入直守人员姓名">
+            </div>
+            <div class="form-item">
+              <label class="form-label">涉及人员</label>
+              <input type="text" class="form-input" value="李四、王五" placeholder="多人用逗号分隔">
+            </div>
+
+            <!-- 第二行 -->
+            <div class="form-item">
+              <label class="form-label">发生时间 <span class="required">*</span></label>
+              <input type="datetime-local" class="form-input" value="2026-07-15T14:30">
+            </div>
+            <div class="form-item">
+              <label class="form-label">信息来源 <span class="required">*</span></label>
+              <select class="form-select">
+                <option value="110" selected>110接报</option>
+                <option value="mass">群众报案</option>
+                <option value="superior">上级交办</option>
+                <option value="transfer">其他部门移交</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label class="form-label">辖区 <span class="required">*</span></label>
+              <input type="text" class="form-input" value="朝阳派出所" placeholder="请输入辖区">
+            </div>
+
+            <!-- 第三行 -->
+            <div class="form-item col-1">
+              <label class="form-label">案件类别 <span class="required">*</span></label>
+              <select class="form-select">
+                <option value="criminal">刑事</option>
+                <option value="public" selected>治安</option>
+                <option value="traffic">交通</option>
+                <option value="help">求助</option>
+              </select>
+            </div>
+
+            <!-- 第四行：案件基本情况 -->
+            <div class="form-item col-full">
+              <label class="form-label">案件基本情况 <span class="required">*</span></label>
+              <textarea class="form-textarea" rows="4" placeholder="请输入案件或警情基本情况" oninput="updateCharCount(this)">某小区3号楼2单元501室，住户因噪音问题与邻居发生争执，进而引发肢体冲突。接到报警后立即出警，到达现场时双方已被邻居拉开。经初步了解，冲突双方均有轻微擦伤，无重大伤情。已对双方进行批评教育，并制作询问笔录。</textarea>
+              <div class="char-count"><span class="count-num">112</span>/5000</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 面板二：现场处置（默认折叠） -->
+      <div class="accordion-panel collapsed" data-panel="scene">
+        <div class="accordion-header" onclick="togglePanel(this)">
+          <div class="accordion-title">
+            <span>现场处置</span>
+          </div>
+          <svg class="accordion-arrow w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <div class="accordion-body">
+          <div class="form-grid">
+            <div class="form-item col-1">
+              <label class="form-label">现场处置人员</label>
+              <input type="text" class="form-input" placeholder="请输入现场处置人员">
+            </div>
+            <div class="form-item col-full">
+              <label class="form-label">现场开展处置情况</label>
+              <textarea class="form-textarea" rows="4" placeholder="请输入现场处置情况"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 面板三：研判分析（默认折叠） -->
+      <div class="accordion-panel collapsed" data-panel="analysis">
+        <div class="accordion-header" onclick="togglePanel(this)">
+          <div class="accordion-title">
+            <span>研判分析</span>
+          </div>
+          <svg class="accordion-arrow w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <div class="accordion-body">
+          <div class="form-grid">
+            <div class="form-item col-full">
+              <label class="form-label">研判情况</label>
+              <textarea class="form-textarea" rows="4" placeholder="请输入研判分析结果"></textarea>
+            </div>
+            <div class="form-item col-full">
+              <label class="form-label">研判图片上传</label>
+              <div data-dom-id="upload-images">
+                <div class="upload-area" onclick="document.getElementById('imageUpload').click()">
+                  <svg class="upload-icon w-10 h-10 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <div class="upload-text">点击或拖拽图片到此处上传</div>
+                  <div class="upload-hint">支持 JPG/PNG/GIF/WEBP，单张不超过 5MB，最多 9 张</div>
+                </div>
+                <input type="file" id="imageUpload" accept="image/*" multiple class="hidden">
+                <!-- 图片预览网格 -->
+                <div class="image-preview-grid">
+                  <div class="image-preview-item">
+                    <svg class="placeholder-icon w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    <div class="delete-btn" onclick="removeImage(this)">×</div>
+                  </div>
+                  <div class="image-preview-item">
+                    <svg class="placeholder-icon w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    <div class="delete-btn" onclick="removeImage(this)">×</div>
+                  </div>
+                  <div class="image-preview-item">
+                    <svg class="placeholder-icon w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                    <div class="delete-btn" onclick="removeImage(this)">×</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 面板四：闭环与交接（默认折叠） -->
+      <div class="accordion-panel collapsed" data-panel="closure">
+        <div class="accordion-header" onclick="togglePanel(this)">
+          <div class="accordion-title">
+            <span>闭环与交接</span>
+          </div>
+          <svg class="accordion-arrow w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <div class="accordion-body">
+          <div class="form-grid">
+            <div class="form-item">
+              <label class="form-label">闭环情况</label>
+              <textarea class="form-textarea" rows="3" placeholder="请输入闭环情况"></textarea>
+            </div>
+            <div class="form-item">
+              <label class="form-label">后续移交跟进</label>
+              <textarea class="form-textarea" rows="3" placeholder="请输入后续移交跟进情况"></textarea>
+            </div>
+            <div class="form-item">
+              <label class="form-label">人员交接</label>
+              <textarea class="form-textarea" rows="3" placeholder="请输入人员交接情况"></textarea>
+            </div>
+          </div>
+          <!-- 开关行 -->
+          <div class="form-grid mt-4">
+            <div class="form-item">
+              <div class="form-switch" onclick="toggleSwitch(this)">
+                <div class="switch-track">
+                  <div class="switch-thumb"></div>
+                </div>
+                <span class="switch-label">标记为已办结</span>
+              </div>
+            </div>
+            <div class="form-item">
+              <div class="form-switch" onclick="toggleSwitch(this)">
+                <div class="switch-track">
+                  <div class="switch-thumb"></div>
+                </div>
+                <span class="switch-label">标记为已提级</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部操作栏 -->
+      <div class="form-actions">
+        <button class="btn-cancel" data-dom-id="btn-cancel-form">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          取消返回
+        </button>
+        <button class="btn-submit" data-dom-id="btn-submit-form" onclick="handleSubmit(this)">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          <span class="spinner"></span>
+          <span class="btn-text">提交保存</span>
+        </button>
+      </div>
+
+      <!-- 底部留白 -->
+      <div class="h-16"></div>
+
+    </div>
+  </main>
+
+  <script>
+    // 折叠面板切换
+    function togglePanel(headerEl) {
+      const panel = headerEl.parentElement;
+      panel.classList.toggle('collapsed');
+    }
+
+    // 字符计数
+    function updateCharCount(textarea) {
+      const count = textarea.value.length;
+      const countEl = textarea.parentElement.querySelector('.count-num');
+      if (countEl) {
+        countEl.textContent = count;
+      }
+    }
+
+    // 自动生成序号
+    function autoGenerateSerial() {
+      const input = document.querySelector('.input-with-btn .form-input');
+      if (input) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        input.value = `TZ${year}${month}${day}${random}`;
+      }
+    }
+
+    // 开关切换
+    function toggleSwitch(el) {
+      el.classList.toggle('active');
+    }
+
+    // 删除图片
+    function removeImage(btn) {
+      const item = btn.parentElement;
+      item.remove();
+    }
+
+    // 提交表单
+    function handleSubmit(btn) {
+      const spinner = btn.querySelector('.spinner');
+      const text = btn.querySelector('.btn-text');
+      spinner.style.display = 'inline-block';
+      text.textContent = '提交中...';
+      btn.disabled = true;
+      btn.style.opacity = '0.8';
+
+      // 模拟提交
+      setTimeout(() => {
+        spinner.style.display = 'none';
+        text.textContent = '提交保存';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      }, 2000);
+    }
+  </script>
+</body>
+</html>

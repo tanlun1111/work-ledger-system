@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}台账管理 - 警情案件工作台账登记系统{% endblock %}
+
+{% block content %}
+<div class="empty-state" style="padding-top:6rem">
+  <div class="empty-icon"><i class="bi bi-arrow-repeat spin"></i></div>
+  <div class="empty-text">正在跳转到台账列表...</div>
+  <a href="/" class="btn btn-primary btn-sm mt-3">立即返回</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+window.location.replace('/');
+</script>
+{% endblock %}

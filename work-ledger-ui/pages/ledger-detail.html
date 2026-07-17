@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>台账详情 - 警情案件工作台账登记系统</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../colors_and_type.css">
+</head>
+<body class="min-h-screen flex flex-col" style="background: var(--background); font-family: var(--font-sans);">
+
+  <!-- 顶部导航栏 -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[var(--color-primary-800)] text-white shadow-md">
+    <div class="h-14 flex items-center justify-between px-6">
+      <!-- 左侧：Logo + 系统名称 -->
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded bg-white/15 flex items-center justify-center">
+          <!-- 警徽图标（SVG） -->
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <h1 class="text-lg font-semibold tracking-wide">警情案件工作台账登记系统</h1>
+      </div>
+
+      <!-- 中间：主导航 -->
+      <nav class="flex items-center gap-1" data-nav="main">
+        <a href="#" data-nav-key="ledger" data-dom-id="nav-ledger-list"
+           class="px-4 py-1.5 rounded-md text-sm font-medium bg-white/15 text-white transition-colors">
+          台账管理
+        </a>
+        <a href="#" data-nav-key="stats"
+           class="px-4 py-1.5 rounded-md text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors">
+          统计分析
+        </a>
+        <a href="#" data-nav-key="settings"
+           class="px-4 py-1.5 rounded-md text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors">
+          系统设置
+        </a>
+      </nav>
+
+      <!-- 右侧：用户信息 -->
+      <div class="flex items-center gap-3">
+        <button class="p-2 rounded-md text-white/80 hover:bg-white/10 hover:text-white transition-colors" title="通知">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+        <div class="flex items-center gap-2 pl-3 border-l border-white/20">
+          <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-medium">
+            管
+          </div>
+          <span class="text-sm">管理员</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="flex-1 pt-14">
+    <div class="max-w-5xl mx-auto px-6 py-6">
+
+      <!-- 面包屑导航 -->
+      <nav class="flex items-center gap-2 mb-4 text-sm" style="color: var(--color-gray-500);">
+        <a href="#" class="flex items-center gap-1 hover:text-[var(--color-primary-700)] transition-colors">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          台账管理
+        </a>
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+        <span style="color: var(--color-gray-700);">台账详情</span>
+      </nav>
+
+      <!-- 页面标题区 -->
+      <div class="flex items-start justify-between mb-6">
+        <div>
+          <div class="flex items-center gap-3 mb-1">
+            <h1 class="text-2xl font-bold" style="color: var(--color-primary-800);">JQ-20260715-001</h1>
+            <span class="px-2 py-0.5 rounded text-xs font-medium text-white" style="background-color: var(--state-warning); border-radius: 4px;">未办结</span>
+            <span class="px-2 py-0.5 rounded text-xs font-medium text-white" style="background-color: var(--color-gray-400); border-radius: 4px;">未提级</span>
+          </div>
+          <p class="text-sm" style="color: var(--color-gray-500);">警情案件台账详情</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button data-dom-id="btn-back-list"
+                  class="flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium border transition-colors"
+                  style="border-color: var(--color-gray-300); color: var(--color-gray-600); background: #fff;"
+                  onmouseover="this.style.borderColor='var(--color-gray-400)'; this.style.color='var(--color-gray-700)';"
+                  onmouseout="this.style.borderColor='var(--color-gray-300)'; this.style.color='var(--color-gray-600)';">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            返回列表
+          </button>
+          <button data-dom-id="btn-edit-from-detail"
+                  class="flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium text-white transition-colors"
+                  style="background-color: var(--color-primary-800);"
+                  onmouseover="this.style.backgroundColor='var(--color-primary-700)';"
+                  onmouseout="this.style.backgroundColor='var(--color-primary-800)';">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            编辑
+          </button>
+        </div>
+      </div>
+
+      <!-- 卡片一：基本信息 -->
+      <div class="bg-white rounded-lg border mb-4" style="border-color: var(--color-gray-200); border-radius: 8px; padding: 20px;">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-1 h-5 rounded-sm" style="background-color: var(--color-primary-800);"></div>
+          <h2 class="text-base font-semibold" style="color: var(--color-gray-900);">📋 基本信息</h2>
+        </div>
+        <!-- 三列栅格 -->
+        <div class="grid grid-cols-3 gap-x-6 gap-y-4 mb-4">
+          <div>
+            <div class="text-xs mb-1" style="color: var(--color-gray-500);">序号</div>
+            <div class="text-sm font-semibold" style="color: var(--color-gray-900);">JQ-20260715-001</div>
+          </div>
+          <div>
+            <div class="text-xs mb-1" style="color: var(--color-gray-500);">直守人员</div>
+            <div class="text-sm font-semibold" style="color: var(--color-gray-900);">张三</div>
+          </div>
+          <div>
+            <div class="text-xs mb-1" style="color: var(--color-gray-500);">涉及人员</div>
+            <div class="text-sm font-semibold" style="color: var(--color-gray-900);">李四、王五</div>
+          </div>
+          <div>
+            <div class="text-xs mb-1" style="color: var(--color-gray-500);">发生时间</div>
+            <div class="text-sm font-semibold" style="color: var(--color-gray-900);">2026-07-15 14:30</div>
+          </div>
+          <div>
+            <div class="text-xs mb-1" style="color: var(--color-gray-500);">信息来源</div>
+            <div class="text-sm font-semibold" style="color: var(--color-gray-900);">110接报</div>
+          </div>
+          <div>
+            <div class="text-xs mb-1" style="color: var(--color-gray-500);">辖区</div>
+            <div class="text-sm font-semibold" style="color: var(--color-gray-900);">朝阳派出所</div>
+          </div>
+          <div>
+            <div class="text-xs mb-1" style="color: var(--color-gray-500);">案件类别</div>
+            <div class="text-sm font-semibold" style="color: var(--color-gray-900);">治安</div>
+          </div>
+        </div>
+        <!-- 案件基本情况 -->
+        <div class="pt-3" style="border-top: 1px solid var(--color-gray-100);">
+          <div class="text-xs mb-2" style="color: var(--color-gray-500);">案件基本情况</div>
+          <p class="text-sm leading-relaxed" style="color: var(--color-gray-700);">
+            某小区3号楼2单元501室，住户因噪音问题与邻居发生争执，进而引发肢体冲突。接到报警后立即出警，到达现场时双方已被邻居拉开。经初步了解，冲突双方均有轻微擦伤，无重大伤情。已对双方进行批评教育，并制作询问笔录。后续将根据伤情鉴定结果，依法作出进一步处理。
+          </p>
+        </div>
+      </div>
+
+      <!-- 卡片二：处置信息 -->
+      <div class="bg-white rounded-lg border mb-4" style="border-color: var(--color-gray-200); border-radius: 8px; padding: 20px;">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-1 h-5 rounded-sm" style="background-color: var(--color-primary-800);"></div>
+          <h2 class="text-base font-semibold" style="color: var(--color-gray-900);">🚔 现场处置</h2>
+        </div>
+        <!-- 两列布局 -->
+        <div class="grid grid-cols-2 gap-x-6 gap-y-4 mb-4">
+          <div>
+            <div class="text-xs mb-1" style="color: var(--color-gray-500);">现场处置人员</div>
+            <div class="text-sm font-semibold" style="color: var(--color-gray-900);">民警甲、民警乙</div>
+          </div>
+          <div></div>
+        </div>
+        <!-- 现场开展处置情况 -->
+        <div class="pt-3" style="border-top: 1px solid var(--color-gray-100);">
+          <div class="text-xs mb-2" style="color: var(--color-gray-500);">现场开展处置情况</div>
+          <p class="text-sm leading-relaxed" style="color: var(--color-gray-700);">
+            接到110指挥中心指令后，值班民警立即携带单警装备驱车赶赴现场。到达现场后发现冲突双方已被围观群众拉开，情绪仍较激动。民警首先控制现场秩序，安抚双方情绪，随后分别对当事人及目击者进行询问并制作笔录。经现场调解，双方均表示愿意接受批评教育，互不追究对方责任。
+          </p>
+        </div>
+      </div>
+
+      <!-- 卡片三：研判分析 -->
+      <div class="bg-white rounded-lg border mb-4" style="border-color: var(--color-gray-200); border-radius: 8px; padding: 20px;">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-1 h-5 rounded-sm" style="background-color: var(--color-primary-800);"></div>
+          <h2 class="text-base font-semibold" style="color: var(--color-gray-900);">🔍 研判分析</h2>
+        </div>
+        <!-- 研判情况 -->
+        <div class="mb-4">
+          <div class="text-xs mb-2" style="color: var(--color-gray-500);">研判情况</div>
+          <p class="text-sm leading-relaxed" style="color: var(--color-gray-700);">
+            该案系典型的邻里纠纷引发的治安案件。经调取小区监控录像及证人证言，事实清楚，证据确凿。双方当事人此前已有多次噪音投诉记录，建议社区民警联合物业部门加强该区域的邻里关系调解工作，从源头上减少类似警情的发生。同时，建议将该案纳入重点关注对象，防止矛盾进一步激化。
+          </p>
+        </div>
+        <!-- 研判图片 -->
+        <div class="pt-3" style="border-top: 1px solid var(--color-gray-100);">
+          <div class="text-xs mb-3" style="color: var(--color-gray-500);">研判图片（3张）</div>
+          <div class="grid grid-cols-3 gap-3">
+            <div data-dom-id="img-preview-1"
+                 class="aspect-square rounded-md cursor-pointer overflow-hidden flex items-center justify-center transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
+                 style="background: linear-gradient(135deg, var(--color-gray-600), var(--color-gray-800)); border-radius: 6px;">
+              <div class="flex flex-col items-center gap-2 text-white/70">
+                <svg class="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <path d="M21 15l-5-5L5 21"/>
+                </svg>
+                <span class="text-xs">研判图1</span>
+              </div>
+            </div>
+            <div class="aspect-square rounded-md cursor-pointer overflow-hidden flex items-center justify-center transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
+                 style="background: linear-gradient(135deg, var(--color-gray-600), var(--color-gray-800)); border-radius: 6px;">
+              <div class="flex flex-col items-center gap-2 text-white/70">
+                <svg class="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <path d="M21 15l-5-5L5 21"/>
+                </svg>
+                <span class="text-xs">研判图2</span>
+              </div>
+            </div>
+            <div class="aspect-square rounded-md cursor-pointer overflow-hidden flex items-center justify-center transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
+                 style="background: linear-gradient(135deg, var(--color-gray-600), var(--color-gray-800)); border-radius: 6px;">
+              <div class="flex flex-col items-center gap-2 text-white/70">
+                <svg class="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <path d="M21 15l-5-5L5 21"/>
+                </svg>
+                <span class="text-xs">研判图3</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 卡片四：闭环与交接 -->
+      <div class="bg-white rounded-lg border mb-4" style="border-color: var(--color-gray-200); border-radius: 8px; padding: 20px;">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-1 h-5 rounded-sm" style="background-color: var(--color-primary-800);"></div>
+          <h2 class="text-base font-semibold" style="color: var(--color-gray-900);">🔄 闭环与交接</h2>
+        </div>
+        <!-- 三列布局 -->
+        <div class="grid grid-cols-3 gap-x-6 gap-y-4 mb-4">
+          <div>
+            <div class="text-xs mb-1" style="color: var(--color-gray-500);">闭环情况</div>
+            <div class="text-sm italic" style="color: var(--color-gray-400);">待闭环</div>
+          </div>
+          <div>
+            <div class="text-xs mb-1" style="color: var(--color-gray-500);">后续移交跟进</div>
+            <div class="text-sm italic" style="color: var(--color-gray-400);">暂无</div>
+          </div>
+          <div>
+            <div class="text-xs mb-1" style="color: var(--color-gray-500);">人员交接</div>
+            <div class="text-sm italic" style="color: var(--color-gray-400);">暂无</div>
+          </div>
+        </div>
+        <!-- 底部时间信息 -->
+        <div class="pt-3 flex items-center justify-between" style="border-top: 1px solid var(--color-gray-100);">
+          <div class="text-xs" style="color: var(--color-gray-400);">
+            创建时间：2026-07-15 15:00:00
+          </div>
+          <div class="text-xs" style="color: var(--color-gray-400);">
+            更新时间：2026-07-15 15:00:00
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- 图片查看器模态框（默认显示，作为设计稿的一部分） -->
+  <div data-dom-id="modal-image-viewer"
+       class="fixed inset-0 z-[100] flex items-center justify-center"
+       style="background-color: rgba(0, 0, 0, 0.8);">
+    <!-- 关闭按钮 -->
+    <button class="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors"
+            style="backdrop-filter: blur(4px);">
+      <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+    <!-- 大图预览（占位样式） -->
+    <div class="relative flex flex-col items-center justify-center"
+         style="max-height: 80vh; max-width: 80vw;">
+      <div class="flex flex-col items-center justify-center rounded-lg"
+           style="width: 600px; height: 450px; background: linear-gradient(135deg, var(--color-gray-700), var(--color-gray-900));">
+        <svg class="w-20 h-20 text-white/50 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <path d="M21 15l-5-5L5 21"/>
+        </svg>
+        <span class="text-lg text-white/60">图片预览</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 全局 Toast 容器（预留） -->
+  <div id="globalToastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+
+</body>
+</html>

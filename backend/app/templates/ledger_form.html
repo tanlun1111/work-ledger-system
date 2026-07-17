@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑台账' if mode == 'edit' else '新增台账' }} - 警情案件工作台账登记系统{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-container { max-width: 1600px; margin: 0 auto; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container" x-data="formPage()" x-init="init()" autocomplete="off">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="/">台账管理</a></li>
+      <li class="breadcrumb-item active">{{ '编辑台账' if mode == 'edit' else '新增台账' }}</li>
+    </ol>
+  </nav>
+
+  <h4 class="fw-bold mb-1">{{ '编辑台账' if mode == 'edit' else '新增台账' }}</h4>
+  <p class="text-muted small mb-4">请填写台账相关信息，带 <span class="text-danger">*</span> 号为必填项</p>
+
+  <div class="accordion" id="formAccordion">
+    <div class="accordion-item">
+      <h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelBasic"><span class="text-danger me-1">*</span>基本信息</button></h2>
+      <div id="panelBasic" class="accordion-collapse collapse show" data-bs-parent="#formAccordion">
+        <div class="accordion-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label small">直守人员 <span class="text-danger">*</span></label>
+              <input type="text" class="form-control form-control-sm" x-model="form.duty_officer" maxlength="50">
+              <div class="text-danger small" x-show="errors.duty_officer" x-text="errors.duty_officer"></div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small">涉及人员</label>
+              <input type="text" class="form-control form-control-sm" x-model="form.personnel" placeholder="多人用逗号分隔" autocomplete="off">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small">发生时间 <span class="text-danger">*</span></label>
+              <input type="datetime-local" class="form-control form-control-sm" x-model="form.incident_time" step="60">
+              <div class="text-danger small" x-show="errors.incident_time" x-text="errors.incident_time"></div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small">信息来源 <span class="text-danger">*</span></label>
+              <select class="form-select form-select-sm" x-model="form.info_source">
+                <option value="">请选择</option>
+                <template x-for="s in infoSources" :key="s.value"><option :value="s.value" x-text="s.label"></option></template>
+              </select>
+              <div class="text-danger small" x-show="errors.info_source" x-text="errors.info_source"></div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small">辖区 <span class="text-danger">*</span></label>
+              <select class="form-select form-select-sm" x-model="form.jurisdiction">
+                <option value="">请选择</option>
+                <template x-for="j in jurisdictions" :key="j.value"><option :value="j.value" x-text="j.label"></option></template>
+              </select>
+              <div class="text-danger small" x-show="errors.jurisdiction" x-text="errors.jurisdiction"></div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small">案件类别 <span class="text-danger">*</span></label>
+              <select class="form-select form-select-sm" x-model="form.case_category">
+                <option value="">请选择</option>
+                <template x-for="c in caseCategories" :key="c.value"><option :value="c.value" x-text="c.label"></option></template>
+              </select>
+              <div class="text-danger small" x-show="errors.case_category" x-text="errors.case_category"></div>
+            </div>
+            <div class="col-12">
+              <label class="form-label small">案件基本情况 <span class="text-danger">*</span></label>
+              <textarea class="form-control form-control-sm" rows="4" x-model="form.case_basic_info" maxlength="5000"></textarea>
+              <div class="text-danger small" x-show="errors.case_basic_info" x-text="errors.case_basic_info"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelSite">现场处置</button></h2>
+      <div id="panelSite" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+        <div class="accordion-body">
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label small">现场处置人员</label><input type="text" class="form-control form-control-sm" x-model="form.on_site_personnel" maxlength="200" autocomplete="off"></div>
+            <div class="col-12"><label class="form-label small">现场开展处置情况</label><textarea class="form-control form-control-sm" rows="4" x-model="form.on_site_handling" maxlength="5000"></textarea></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelAnalysis">研判分析</button></h2>
+      <div id="panelAnalysis" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+        <div class="accordion-body">
+          <div class="mb-3"><label class="form-label small">研判情况</label><textarea class="form-control form-control-sm" rows="4" x-model="form.analysis_situation" maxlength="5000"></textarea></div>
+          <label class="form-label small">研判图片</label>
+          <div class="upload-zone mb-3" @click="$refs.fileInput.click()" @dragover.prevent @drop.prevent="handleDrop">
+            <i class="bi bi-cloud-upload fs-3 text-muted"></i>
+            <p class="mb-1 small">点击或拖拽图片到此区域上传</p>
+            <p class="text-muted" style="font-size:11px">支持 jpg/png/gif/webp，单文件不超过 10MB，最多 9 张</p>
+            <input type="file" x-ref="fileInput" class="d-none" accept="image/jpeg,image/png,image/gif,image/webp" multiple @change="addImages">
+          </div>
+          <div class="image-preview-grid" x-show="allImages.length > 0">
+            <template x-for="(img, idx) in allImages" :key="img.key">
+              <div class="image-preview-item">
+                <img :src="img.url" alt="">
+                <button class="btn-remove" @click="removeImage(img, idx)"><i class="bi bi-x"></i></button>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelClose">闭环与交接</button></h2>
+      <div id="panelClose" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+        <div class="accordion-body">
+          <div class="row g-3">
+            <div class="col-12"><label class="form-label small">闭环情况</label><textarea class="form-control form-control-sm" rows="3" x-model="form.closure_status" maxlength="3000"></textarea></div>
+            <div class="col-12"><label class="form-label small">后续移交跟进</label><textarea class="form-control form-control-sm" rows="3" x-model="form.follow_up" maxlength="3000"></textarea></div>
+            <div class="col-12"><label class="form-label small">人员交接</label><textarea class="form-control form-control-sm" rows="3" x-model="form.handover" maxlength="2000"></textarea></div>
+            <div class="col-md-6">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" x-model="form.is_closed" :true-value="1" :false-value="0">
+                <label class="form-check-label small">是否办结</label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" x-model="form.is_escalated" :true-value="1" :false-value="0">
+                <label class="form-check-label small">是否提级</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+    <a href="/" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>取消返回</a>
+    <button class="btn btn-primary" :disabled="submitting" @click="submit">
+      <span x-show="!submitting"><i class="bi bi-check-lg me-1"></i>提交保存</span>
+      <span x-show="submitting"><span class="spinner-border spinner-border-sm me-1"></span>保存中...</span>
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function formPage() {
+  return {
+    mode: '{{ mode }}',
+    recordId: {{ record_id|default(0) }},
+    form: {
+      duty_officer: '', personnel: '', incident_time: '',
+      info_source: '', jurisdiction: '', case_category: '', case_basic_info: '',
+      on_site_personnel: '', on_site_handling: '', analysis_situation: '',
+      closure_status: '', follow_up: '', handover: '',
+      is_closed: 0, is_escalated: 0
+    },
+    infoSources: [], caseCategories: [], jurisdictions: [],
+    existingImages: [],
+    newImageFiles: [],
+    errors: {},
+    submitting: false,
+
+    get allImages() {
+      const result = [];
+      for (const img of this.existingImages) {
+        result.push({ key: 'e_' + img.id, url: img.url, id: img.id, type: 'existing' });
+      }
+      for (let i = 0; i < this.newImageFiles.length; i++) {
+        result.push({ key: 'n_' + i, url: URL.createObjectURL(this.newImageFiles[i]), index: i, type: 'new' });
+      }
+      return result;
+    },
+
+    init() {
+      this.form.duty_officer = document.querySelector('meta[name="current-user-name"]')?.content || '';
+      this.loadEnums();
+      if (this.mode === 'edit') {
+        this.loadRecord();
+      }
+      if (this.mode === 'add') {
+        setTimeout(() => {
+          this.form.personnel = '';
+          this.form.incident_time = '';
+          this.form.on_site_personnel = '';
+          this.form.on_site_handling = '';
+          this.form.analysis_situation = '';
+          this.form.closure_status = '';
+          this.form.follow_up = '';
+          this.form.handover = '';
+        }, 300);
+      }
+    },
+
+    async loadEnums() {
+      try {
+        const res = await api.get('/api/enums');
+        this.infoSources = res.data.info_source || [];
+        this.caseCategories = res.data.case_category || [];
+        this.jurisdictions = res.data.jurisdiction || [];
+      } catch (e) {}
+    },
+
+    async loadRecord() {
+      if (!this.recordId) return;
+      try {
+        const res = await api.get('/api/ledger/' + this.recordId);
+        const d = res.data;
+        this.recordData = d;
+        this.form.duty_officer = d.duty_officer || '';
+        this.form.personnel = d.personnel || '';
+        this.form.on_site_personnel = d.on_site_personnel || '';
+        this.form.on_site_handling = d.on_site_handling || '';
+        this.form.analysis_situation = d.analysis_situation || '';
+        this.form.closure_status = d.closure_status || '';
+        this.form.follow_up = d.follow_up || '';
+        this.form.handover = d.handover || '';
+        if (d.incident_time) this.form.incident_time = d.incident_time.replace(' ', 'T');
+        this.form.info_source = d.info_source || '';
+        this.form.jurisdiction = d.jurisdiction || '';
+        this.form.case_category = d.case_category || '';
+        this.form.case_basic_info = d.case_basic_info || '';
+        this.form.is_closed = +d.is_closed || 0;
+        this.form.is_escalated = +d.is_escalated || 0;
+        this.existingImages = (d.images || []).map(img => ({ id: img.id, url: img.url }));
+      } catch (e) {
+        Toast.show(e.message, 'error');
+      }
+      this.$nextTick(() => {
+        const d = this.recordData || {};
+        this.form.personnel = this.form.personnel || '';
+        this.form.on_site_personnel = this.form.on_site_personnel || '';
+        this.form.on_site_handling = this.form.on_site_handling || '';
+        this.form.analysis_situation = this.form.analysis_situation || '';
+        this.form.closure_status = this.form.closure_status || '';
+        this.form.follow_up = this.form.follow_up || '';
+        this.form.handover = this.form.handover || '';
+        this.form.is_closed = +d.is_closed || 0;
+        this.form.is_escalated = +d.is_escalated || 0;
+      });
+    },
+
+    addImages(e) {
+      const files = e.target.files;
+      if (!files) return;
+      for (const f of files) {
+        if (this.allImages.length >= 9) { Toast.show('最多上传 9 张图片', 'warning'); break; }
+        if (f.size > 10 * 1024 * 1024) { Toast.show('文件大小不能超过 10MB', 'warning'); continue; }
+        if (!['image/jpeg','image/png','image/gif','image/webp'].includes(f.type)) { Toast.show('不支持的文件类型', 'warning'); continue; }
+        this.newImageFiles.push(f);
+      }
+      e.target.value = '';
+    },
+
+    handleDrop(e) {
+      if (e.dataTransfer.files) {
+        this.addImages({ target: { files: e.dataTransfer.files, value: '' } });
+      }
+    },
+
+    removeImage(img) {
+      if (img.type === 'existing') {
+        if (this.mode === 'edit') {
+          api.delete('/api/ledger/' + this.recordId + '/images/' + img.id).catch(() => {});
+        }
+        this.existingImages = this.existingImages.filter(i => i.id !== img.id);
+      } else if (img.type === 'new') {
+        URL.revokeObjectURL(img.url);
+        this.newImageFiles.splice(img.index, 1);
+      }
+    },
+
+    validate() {
+      this.errors = {};
+      if (!this.form.duty_officer.trim()) this.errors.duty_officer = '直守人员不能为空';
+      if (!this.form.incident_time) this.errors.incident_time = '发生时间不能为空';
+      if (!this.form.info_source) this.errors.info_source = '请选择信息来源';
+      if (!this.form.jurisdiction.trim()) this.errors.jurisdiction = '辖区不能为空';
+      if (!this.form.case_category) this.errors.case_category = '请选择案件类别';
+      if (!this.form.case_basic_info.trim()) this.errors.case_basic_info = '案件基本情况不能为空';
+      return Object.keys(this.errors).length === 0;
+    },
+
+    async submit() {
+      if (!this.validate()) { Toast.show('请检查必填项', 'warning'); return; }
+      this.submitting = true;
+      try {
+        const body = { ...this.form };
+        body.is_closed = body.is_closed ? 1 : 0;
+        body.is_escalated = body.is_escalated ? 1 : 0;
+        if (body.incident_time) body.incident_time = body.incident_time.replace('T', ' ');
+        for (const k of ['personnel', 'on_site_personnel', 'on_site_handling', 'analysis_situation', 'closure_status', 'follow_up', 'handover']) {
+          if (!body[k]) delete body[k];
+        }
+
+        let ledgerId = this.recordId;
+        if (this.mode === 'add') {
+          const res = await api.post('/api/ledger', JSON.stringify(body));
+          ledgerId = res.data.id;
+        } else {
+          await api.patch('/api/ledger/' + ledgerId, JSON.stringify(body));
+        }
+
+        for (const file of this.newImageFiles) {
+          const fd = new FormData();
+          fd.append('files', file);
+          await api.postFormData('/api/ledger/' + ledgerId + '/images', fd);
+        }
+
+        Toast.show(this.mode === 'add' ? '台账登记成功' : '台账更新成功');
+        setTimeout(() => { window.location.href = '/'; }, 500);
+      } catch (e) {
+        Toast.show(e.message, 'error');
+      } finally {
+        this.submitting = false;
+      }
+    },
+
+    isDirty() { return true; }
+  };
+}
+</script>
+{% endblock %}

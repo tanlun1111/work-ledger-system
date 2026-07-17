@@ -1,0 +1,200 @@
+/* ============================================================
+   警情案件工作台账登记系统 - 品牌样式与设计令牌
+   ============================================================ */
+
+:root {
+  /* --- 主色：政务深蓝 --- */
+  --color-primary-50:  #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
+
+  /* --- 中性色 --- */
+  --color-gray-50:  #f8fafc;
+  --color-gray-100: #f1f5f9;
+  --color-gray-200: #e2e8f0;
+  --color-gray-300: #cbd5e1;
+  --color-gray-400: #94a3b8;
+  --color-gray-500: #64748b;
+  --color-gray-600: #475569;
+  --color-gray-700: #334155;
+  --color-gray-800: #1e293b;
+  --color-gray-900: #0f172a;
+  --color-gray-950: #020617;
+
+  /* --- 语义状态色 --- */
+  --state-success: #16a34a;
+  --state-success-bg: #f0fdf4;
+  --state-success-border: #86efac;
+  --state-warning: #f59e0b;
+  --state-warning-bg: #fffbeb;
+  --state-warning-border: #fcd34d;
+  --state-error: #dc2626;
+  --state-error-bg: #fef2f2;
+  --state-error-border: #fca5a5;
+  --state-info: #0284c7;
+  --state-info-bg: #f0f9ff;
+  --state-info-border: #7dd3fc;
+
+  /* --- 语义别名（供 fill-html-head 使用）--- */
+  --background:        var(--color-gray-50);
+  --foreground:        var(--color-gray-900);
+  --card:              #ffffff;
+  --card-foreground:   var(--color-gray-900);
+  --popover:           #ffffff;
+  --popover-foreground: var(--color-gray-900);
+  --primary:           var(--color-primary-700);
+  --primary-foreground: #ffffff;
+  --muted:             var(--color-gray-100);
+  --muted-foreground:  var(--color-gray-500);
+  --accent:            var(--color-primary-50);
+  --accent-foreground: var(--color-primary-800);
+  --border:            var(--color-gray-200);
+  --input:             var(--color-gray-200);
+  --ring:              var(--color-primary-600);
+
+  /* --- 圆角 --- */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-full: 9999px;
+
+  /* --- 阴影 --- */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  --shadow:    0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+}
+
+/* 深色模式变量（预留） */
+.dark {
+  --background:      var(--color-gray-950);
+  --foreground:      var(--color-gray-50);
+  --card:            var(--color-gray-900);
+  --card-foreground: var(--color-gray-50);
+  --popover:         var(--color-gray-900);
+  --popover-foreground: var(--color-gray-50);
+  --primary:         var(--color-primary-500);
+  --primary-foreground: var(--color-gray-950);
+  --muted:           var(--color-gray-800);
+  --muted-foreground: var(--color-gray-400);
+  --accent:          var(--color-gray-800);
+  --accent-foreground: var(--color-gray-50);
+  --border:          var(--color-gray-800);
+  --input:           var(--color-gray-800);
+  --ring:            var(--color-primary-500);
+}
+
+/* ============================================================
+   字体系统
+   ============================================================ */
+:root {
+  --font-sans: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Noto Sans CJK SC", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+
+  --text-xs:   0.75rem;   /* 12px */
+  --text-sm:   0.875rem;  /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg:   1.125rem;  /* 18px */
+  --text-xl:   1.25rem;   /* 20px */
+  --text-2xl:  1.5rem;    /* 24px */
+  --text-3xl:  1.875rem;  /* 30px */
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+}
+
+/* ============================================================
+   全局基础样式
+   ============================================================ */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--foreground);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-gray-100);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-gray-300);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-400);
+}
+
+/* ============================================================
+   Tailwind 兼容别名（供 fill-html-head 使用）
+   ============================================================ */
+.bg-background   { background-color: var(--background); }
+.text-foreground { color: var(--foreground); }
+.bg-card         { background-color: var(--card); }
+.text-card-foreground { color: var(--card-foreground); }
+.bg-popover      { background-color: var(--popover); }
+.text-popover-foreground { color: var(--popover-foreground); }
+.bg-primary      { background-color: var(--primary); }
+.text-primary-foreground { color: var(--primary-foreground); }
+.bg-muted        { background-color: var(--muted); }
+.text-muted-foreground { color: var(--muted-foreground); }
+.bg-accent       { background-color: var(--accent); }
+.text-accent-foreground { color: var(--accent-foreground); }
+.border-border   { border-color: var(--border); }
+.bg-input        { background-color: var(--input); }
+.ring-ring       { --tw-ring-color: var(--ring); }
+
+.rounded-sm  { border-radius: var(--radius-sm); }
+.rounded-md  { border-radius: var(--radius-md); }
+.rounded-lg  { border-radius: var(--radius-lg); }
+.rounded-xl  { border-radius: var(--radius-xl); }
+.rounded-full { border-radius: var(--radius-full); }
+
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow    { box-shadow: var(--shadow); }
+.shadow-md { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+.shadow-xl { box-shadow: var(--shadow-xl); }
+
+/* 文字尺寸 */
+.text-xs   { font-size: var(--text-xs); }
+.text-sm   { font-size: var(--text-sm); }
+.text-base { font-size: var(--text-base); }
+.text-lg   { font-size: var(--text-lg); }
+.text-xl   { font-size: var(--text-xl); }
+.text-2xl  { font-size: var(--text-2xl); }
+.text-3xl  { font-size: var(--text-3xl); }
+
+.font-light   { font-weight: 300; }
+.font-normal  { font-weight: 400; }
+.font-medium  { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold    { font-weight: 700; }

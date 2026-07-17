@@ -1,0 +1,211 @@
+<div class="modal fade" id="ledgerFormModal" tabindex="-1" aria-hidden="true"
+     x-data="modalForm()"
+     x-init="
+       bsModal = new bootstrap.Modal($el);
+       $el.addEventListener('hidden.bs.modal', function(){ if(dirty && !submitting && !forceClose) { setTimeout(function(){ bsModal.show(); }, 150); confirmLeave(); } });
+     ">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span x-show="!isEdit">新增台账</span>
+          <span x-show="isEdit">编辑台账 - <small class="text-muted" x-text="editSerial"></small></span>
+        </h5>
+        <button type="button" class="btn-close" @click="handleClose"></button>
+      </div>
+      <div class="modal-body form-card">
+        <!-- 面板一：基本信息 -->
+        <div class="custom-accordion" id="mFormAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#mPanelBasic" aria-expanded="true">
+                <span class="text-danger me-1">*</span>基本信息
+              </button>
+            </h2>
+            <div id="mPanelBasic" class="accordion-collapse collapse show" data-bs-parent="#mFormAccordion">
+              <div class="accordion-body">
+                <div class="row g-3">
+                  <div class="col-lg-4 col-md-6">
+                    <label class="form-label">序号</label>
+                    <div class="serial-input-group">
+                      <input type="text" class="form-control pe-5" placeholder="留空则自动生成"
+                             x-model="form.serial_no">
+                      <span class="auto-gen-btn" @click="form.serial_no=''">自动生成</span>
+                    </div>
+                    <div class="invalid-feedback" :class="{'d-block':errors.serial_no}" x-text="errors.serial_no"></div>
+                  </div>
+                  <div class="col-lg-4 col-md-6">
+                    <label class="form-label">直守人员 <span class="required">*</span></label>
+                    <input type="text" class="form-control" :class="{'is-invalid':errors.duty_officer}"
+                           placeholder="请输入直守人员姓名" x-model="form.duty_officer">
+                    <div class="invalid-feedback" :class="{'d-block':errors.duty_officer}" x-text="errors.duty_officer"></div>
+                  </div>
+                  <div class="col-lg-4 col-md-6">
+                    <label class="form-label">涉及人员</label>
+                    <input type="text" class="form-control" placeholder="多人用逗号分隔" x-model="form.personnel" value="">
+                  </div>
+                  <div class="col-lg-4 col-md-6">
+                    <label class="form-label">发生时间 <span class="required">*</span></label>
+                    <input type="datetime-local" class="form-control" :class="{'is-invalid':errors.incident_time}"
+                           x-model="form.incident_time" step="60">
+                    <div class="invalid-feedback" :class="{'d-block':errors.incident_time}" x-text="errors.incident_time"></div>
+                  </div>
+                  <div class="col-lg-4 col-md-6">
+                    <label class="form-label">信息来源 <span class="required">*</span></label>
+                    <select class="form-select" :class="{'is-invalid':errors.info_source}" x-model="form.info_source">
+                      <option value="">请选择</option>
+                      <template x-for="opt in infoSources" :key="opt.value">
+                        <option :value="opt.value" x-text="opt.label"></option>
+                      </template>
+                    </select>
+                    <div class="invalid-feedback" :class="{'d-block':errors.info_source}" x-text="errors.info_source"></div>
+                  </div>
+                  <div class="col-lg-4 col-md-6">
+                    <label class="form-label">辖区 <span class="required">*</span></label>
+                    <input type="text" class="form-control" :class="{'is-invalid':errors.jurisdiction}"
+                           placeholder="请输入辖区" x-model="form.jurisdiction">
+                    <div class="invalid-feedback" :class="{'d-block':errors.jurisdiction}" x-text="errors.jurisdiction"></div>
+                  </div>
+                  <div class="col-lg-4 col-md-6">
+                    <label class="form-label">案件类别 <span class="required">*</span></label>
+                    <select class="form-select" :class="{'is-invalid':errors.case_category}" x-model="form.case_category">
+                      <option value="">请选择</option>
+                      <template x-for="opt in caseCategories" :key="opt.value">
+                        <option :value="opt.value" x-text="opt.label"></option>
+                      </template>
+                    </select>
+                    <div class="invalid-feedback" :class="{'d-block':errors.case_category}" x-text="errors.case_category"></div>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">案件基本情况 <span class="required">*</span></label>
+                    <textarea class="form-control" rows="4" :class="{'is-invalid':errors.case_basic_info}"
+                              placeholder="请输入案件或警情基本情况" x-model="form.case_basic_info"></textarea>
+                    <div class="char-counter"><span x-text="(form.case_basic_info||'').length"></span>/5000</div>
+                    <div class="invalid-feedback" :class="{'d-block':errors.case_basic_info}" x-text="errors.case_basic_info"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 面板二：现场处置 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mPanelScene">
+                现场处置
+              </button>
+            </h2>
+            <div id="mPanelScene" class="accordion-collapse collapse" data-bs-parent="#mFormAccordion">
+              <div class="accordion-body">
+                <div class="row g-3">
+                  <div class="col-lg-6">
+                    <label class="form-label">现场处置人员</label>
+                    <input type="text" class="form-control" placeholder="请输入现场处置人员" x-model="form.on_site_personnel">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">现场开展处置情况</label>
+                    <textarea class="form-control" rows="4" placeholder="请输入现场处置情况" x-model="form.on_site_handling"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 面板三：研判分析 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mPanelAnalysis">
+                研判分析
+              </button>
+            </h2>
+            <div id="mPanelAnalysis" class="accordion-collapse collapse" data-bs-parent="#mFormAccordion">
+              <div class="accordion-body">
+                <div class="mb-3">
+                  <label class="form-label">研判情况</label>
+                  <textarea class="form-control" rows="4" placeholder="请输入研判分析结果" x-model="form.analysis_situation"></textarea>
+                </div>
+                <div>
+                  <label class="form-label">研判图片上传</label>
+                  <div class="upload-zone" @click="$refs.mFileInput.click()" @dragover.prevent @drop.prevent="handleDrop">
+                    <svg class="upload-icon-svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="17 8 12 3 7 8"/>
+                      <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <div class="upload-text">点击或拖拽图片到此处上传</div>
+                    <div class="upload-hint">支持 JPG/PNG/GIF/WEBP，单张不超过 10MB，最多 9 张</div>
+                  </div>
+                  <input type="file" x-ref="mFileInput" accept="image/*" multiple class="d-none" @change="handleFileSelect">
+                  <div class="image-preview-grid" x-show="existingImages.length + newImageFiles.length > 0">
+                    <template x-for="(img, idx) in existingImages" :key="'e'+idx">
+                      <div class="image-preview-item">
+                        <img :src="img.url" alt="">
+                        <button type="button" class="img-remove-btn" @click="removeExisting(img)" title="删除">&times;</button>
+                      </div>
+                    </template>
+                    <template x-for="(file, idx) in newImageFiles" :key="'n'+idx">
+                      <div class="image-preview-item">
+                        <img :src="file.previewUrl" alt="">
+                        <button type="button" class="img-remove-btn" @click="removeNew(idx)" title="删除">&times;</button>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 面板四：闭环与交接 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#mPanelClosure">
+                闭环与交接
+              </button>
+            </h2>
+            <div id="mPanelClosure" class="accordion-collapse collapse" data-bs-parent="#mFormAccordion">
+              <div class="accordion-body">
+                <div class="row g-3 mb-3">
+                  <div class="col-lg-4">
+                    <label class="form-label">闭环情况</label>
+                    <textarea class="form-control" rows="3" placeholder="请输入闭环情况" x-model="form.closure_status"></textarea>
+                  </div>
+                  <div class="col-lg-4">
+                    <label class="form-label">后续移交跟进</label>
+                    <textarea class="form-control" rows="3" placeholder="请输入后续移交跟进情况" x-model="form.follow_up"></textarea>
+                  </div>
+                  <div class="col-lg-4">
+                    <label class="form-label">人员交接</label>
+                    <textarea class="form-control" rows="3" placeholder="请输入人员交接情况" x-model="form.handover"></textarea>
+                  </div>
+                </div>
+                <div class="row g-3">
+                  <div class="col-lg-6">
+                    <div class="form-switch-custom" :class="{active:form.is_closed}" @click="form.is_closed=!form.is_closed">
+                      <div class="switch-track"><div class="switch-thumb"></div></div>
+                      <span class="switch-label">标记为已办结</span>
+                    </div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div class="form-switch-custom" :class="{active:form.is_escalated}" @click="form.is_escalated=!form.is_escalated">
+                      <div class="switch-track"><div class="switch-thumb"></div></div>
+                      <span class="switch-label">标记为已提级</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" @click="handleClose">
+          <i class="bi bi-x-circle me-1"></i>取消
+        </button>
+        <button type="button" class="btn btn-primary" :disabled="submitting" @click="submit">
+          <span x-show="!submitting"><i class="bi bi-save me-1"></i>提交保存</span>
+          <span x-show="submitting"><span class="spinner-border spinner-border-sm me-1"></span>保存中...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

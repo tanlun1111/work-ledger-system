@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}台账详情 - 警情案件工作台账登记系统{% endblock %}
+
+{% block content %}
+<div x-data="detailPage()" x-init="load()">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="/">台账管理</a></li>
+      <li class="breadcrumb-item active">台账详情</li>
+    </ol>
+  </nav>
+
+  <template x-if="loading">
+    <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+  </template>
+
+  <template x-if="!loading && record">
+    <div>
+      <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <h4 class="fw-bold text-primary mb-0" x-text="record.serial_no"></h4>
+            <span :class="record.is_closed ? 'badge bg-success' : 'badge bg-warning text-dark'" x-text="record.is_closed ? '已办结' : '未办结'"></span>
+            <span class="badge" :class="record.is_escalated ? 'bg-danger' : 'bg-secondary'" x-text="record.is_escalated ? '已提级' : '未提级'"></span>
+          </div>
+          <p class="text-muted small mb-0">警情案件台账详情</p>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="/" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>返回列表</a>
+          <a :href="'/ledger/' + record.id + '/edit'" class="btn btn-primary btn-sm"><i class="bi bi-pencil me-1"></i>编辑</a>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="bg-primary rounded-1" style="width:4px;height:20px"></div>
+            <h5 class="card-title mb-0 fw-semibold"><i class="bi bi-info-circle me-1"></i>基本信息</h5>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4"><div class="text-muted small">序号</div><div class="fw-medium" x-text="record.serial_no"></div></div>
+            <div class="col-md-4"><div class="text-muted small">直守人员</div><div class="fw-medium" x-text="record.duty_officer"></div></div>
+            <div class="col-md-4"><div class="text-muted small">涉及人员</div><div class="fw-medium" x-text="record.personnel || '-'"></div></div>
+            <div class="col-md-4"><div class="text-muted small">发生时间</div><div class="fw-medium" x-text="record.incident_time"></div></div>
+            <div class="col-md-4"><div class="text-muted small">信息来源</div><div class="fw-medium" x-text="record.info_source"></div></div>
+            <div class="col-md-4"><div class="text-muted small">辖区</div><div class="fw-medium" x-text="record.jurisdiction"></div></div>
+            <div class="col-md-4"><div class="text-muted small">案件类别</div><div class="fw-medium" x-text="record.case_category"></div></div>
+          </div>
+          <div class="pt-3 border-top"><div class="text-muted small mb-2">案件基本情况</div><p class="small" x-text="record.case_basic_info"></p></div>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="bg-primary rounded-1" style="width:4px;height:20px"></div>
+            <h5 class="card-title mb-0 fw-semibold"><i class="bi bi-truck me-1"></i>现场处置</h5>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6"><div class="text-muted small">现场处置人员</div><div class="fw-medium" x-text="record.on_site_personnel || '-'"></div></div>
+          </div>
+          <div class="pt-3 border-top"><div class="text-muted small mb-2">现场开展处置情况</div><p class="small" x-text="record.on_site_handling || '-'"></p></div>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="bg-primary rounded-1" style="width:4px;height:20px"></div>
+            <h5 class="card-title mb-0 fw-semibold"><i class="bi bi-search me-1"></i>研判分析</h5>
+          </div>
+          <div class="mb-3"><div class="text-muted small mb-2">研判情况</div><p class="small" x-text="record.analysis_situation || '-'"></p></div>
+          <template x-if="record.images && record.images.length > 0">
+            <div class="pt-3 border-top">
+              <div class="text-muted small mb-3">研判图片（<span x-text="record.images.length"></span>张）</div>
+              <div class="d-flex flex-wrap gap-2">
+                <template x-for="img in record.images" :key="img.id">
+                  <img :src="img.url" class="rounded" style="width:120px;height:120px;object-fit:cover;cursor:pointer" @click="previewImageUrl = img.url; imageModal.show()">
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="bg-primary rounded-1" style="width:4px;height:20px"></div>
+            <h5 class="card-title mb-0 fw-semibold"><i class="bi bi-arrow-repeat me-1"></i>闭环与交接</h5>
+          </div>
+          <div class="row g-3">
+            <div class="col-12"><div class="text-muted small mb-1">闭环情况</div><p class="small" x-text="record.closure_status || '-'"></p></div>
+            <div class="col-12"><div class="text-muted small mb-1">后续移交跟进</div><p class="small" x-text="record.follow_up || '-'"></p></div>
+            <div class="col-12"><div class="text-muted small mb-1">人员交接</div><p class="small" x-text="record.handover || '-'"></p></div>
+          </div>
+          <div class="pt-3 border-top mt-3">
+            <div class="row">
+              <div class="col-md-6"><span class="text-muted small">创建时间：</span><span class="small" x-text="record.created_at"></span></div>
+              <div class="col-md-6"><span class="text-muted small">更新时间：</span><span class="small" x-text="record.updated_at"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <div class="modal fade" x-ref="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content bg-dark">
+        <div class="modal-body text-center p-0">
+          <img :src="previewImageUrl" class="img-fluid" style="max-height:80vh">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function detailPage() {
+  return {
+    recordId: {{ record_id|default(0) }},
+    record: null,
+    loading: false,
+    previewImageUrl: '',
+    imageModal: null,
+
+    async load() {
+      this.loading = true;
+      try {
+        const res = await api.get('/api/ledger/' + this.recordId);
+        this.record = res.data;
+      } catch (e) {
+        Toast.show(e.message, 'error');
+        if (e.code === 404) setTimeout(() => { window.location.href = '/'; }, 1500);
+      } finally {
+        this.loading = false;
+        this.$nextTick(() => {
+          if (this.$refs.imageModal) this.imageModal = new bootstrap.Modal(this.$refs.imageModal);
+        });
+      }
+    }
+  };
+}
+</script>
+{% endblock %}

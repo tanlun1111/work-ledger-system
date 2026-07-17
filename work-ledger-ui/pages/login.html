@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>警情案件工作台账登记系统 - 登录</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../colors_and_type.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+      min-height: 100vh;
+      font-family: var(--font-sans);
+    }
+
+    /* 背景装饰 - 淡色几何圆形 */
+    .bg-decoration {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0.08;
+    }
+    .bg-decoration.circle-1 {
+      width: 480px;
+      height: 480px;
+      background: #ffffff;
+      top: -160px;
+      left: -120px;
+    }
+    .bg-decoration.circle-2 {
+      width: 360px;
+      height: 360px;
+      background: #ffffff;
+      bottom: -100px;
+      right: -80px;
+    }
+    .bg-decoration.circle-3 {
+      width: 200px;
+      height: 200px;
+      background: #ffffff;
+      top: 40%;
+      right: 10%;
+    }
+
+    /* 输入框聚焦效果 */
+    .input-wrapper:focus-within {
+      border-color: var(--color-primary-800);
+      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.15);
+    }
+
+    /* 登录按钮 hover */
+    .btn-login:hover {
+      background-color: #1e3a8a;
+    }
+
+    /* 复选框自定义 */
+    .custom-checkbox {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .custom-checkbox:checked {
+      background-color: var(--color-primary-800);
+      border-color: var(--color-primary-800);
+    }
+    .custom-checkbox:checked::after {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 5px;
+      height: 9px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center relative overflow-hidden">
+
+  <!-- 背景装饰 -->
+  <div class="bg-decoration circle-1"></div>
+  <div class="bg-decoration circle-2"></div>
+  <div class="bg-decoration circle-3"></div>
+
+  <!-- 登录卡片 -->
+  <div class="relative z-10 w-full max-w-[420px] mx-6 bg-white rounded-xl shadow-xl" style="padding: 40px 36px; border-radius: 12px;">
+
+    <!-- Logo 区 -->
+    <div class="text-center mb-8 pb-6 border-b border-gray-100">
+      <!-- 盾牌图标 -->
+      <div class="flex justify-center mb-4">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M32 4L8 14V30C8 44.5 18.5 56.5 32 60C45.5 56.5 56 44.5 56 30V14L32 4Z" fill="#1e40af"/>
+          <path d="M32 12L16 19V30C16 41.5 24 51 32 54C40 51 48 41.5 48 30V19L32 12Z" fill="#3b82f6"/>
+          <!-- 五角星 -->
+          <path d="M32 22L34.5 29.5H42.5L36 34L38.5 41.5L32 37L25.5 41.5L28 34L21.5 29.5H29.5L32 22Z" fill="#fbbf24"/>
+          <!-- 麦穗/装饰线 -->
+          <path d="M22 46C25 48 28.5 49 32 49C35.5 49 39 48 42 46" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+        </svg>
+      </div>
+      <h1 class="text-xl font-bold text-gray-800 mb-1.5" style="font-size: 20px;">警情案件工作台账登记系统</h1>
+      <p class="text-gray-400" style="font-size: 12px; letter-spacing: 1px;">POLICE CASE LEDGER SYSTEM</p>
+    </div>
+
+    <!-- 登录表单 -->
+    <form id="login-form" onsubmit="return false;">
+
+      <!-- 错误提示条 -->
+      <div data-dom-id="login-error" class="flex items-center gap-2 px-3 py-2.5 mb-5 rounded-md"
+           style="background-color: #fef2f2; border: 1px solid #fca5a5; border-radius: 6px;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
+          <path d="M8 1L14.5 13.5H1.5L8 1Z" fill="#dc2626"/>
+          <path d="M8 5V8.5" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="8" cy="11" r="0.8" fill="white"/>
+        </svg>
+        <span style="font-size: 13px; color: #dc2626;">用户名或密码错误</span>
+      </div>
+
+      <!-- 用户名输入框 -->
+      <div class="mb-4">
+        <div class="input-wrapper flex items-center border rounded-md transition-all duration-200"
+             style="border-color: #e2e8f0; border-radius: 6px; height: 44px;">
+          <span class="flex items-center justify-center w-11 h-full text-gray-400 flex-shrink-0">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 9C11.2091 9 13 7.20914 13 5C13 2.79086 11.2091 1 9 1C6.79086 1 5 2.79086 5 5C5 7.20914 6.79086 9 9 9Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16.5 16.5C16.5 13.4624 13.0376 11 9 11C4.96243 11 1.5 13.4624 1.5 16.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <input
+            type="text"
+            data-dom-id="input-username"
+            placeholder="请输入用户名"
+            value="admin"
+            class="flex-1 h-full bg-transparent outline-none text-gray-700 text-sm placeholder-gray-400 pr-3"
+            style="font-size: 14px;"
+          >
+        </div>
+      </div>
+
+      <!-- 密码输入框 -->
+      <div class="mb-5">
+        <div class="input-wrapper flex items-center border rounded-md transition-all duration-200"
+             style="border-color: #e2e8f0; border-radius: 6px; height: 44px;">
+          <span class="flex items-center justify-center w-11 h-full text-gray-400 flex-shrink-0">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="7" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M5.5 7V4.5C5.5 2.567 7.067 1 9 1C10.933 1 12.5 2.567 12.5 4.5V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="9" cy="11.5" r="1.2" fill="currentColor"/>
+            </svg>
+          </span>
+          <input
+            type="password"
+            data-dom-id="input-password"
+            placeholder="请输入密码"
+            class="flex-1 h-full bg-transparent outline-none text-gray-700 text-sm placeholder-gray-400"
+            style="font-size: 14px;"
+          >
+          <button type="button" id="toggle-password" class="flex items-center justify-center w-11 h-full text-gray-400 hover:text-gray-600 flex-shrink-0 transition-colors">
+            <svg id="eye-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 9C1 9 4.5 3 9 3C13.5 3 17 9 17 9C17 9 13.5 15 9 15C4.5 15 1 9 1 9Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="9" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 记住我 & 忘记密码 -->
+      <div class="flex items-center justify-between mb-6">
+        <label class="flex items-center gap-2 cursor-pointer select-none">
+          <input type="checkbox" class="custom-checkbox" checked>
+          <span style="font-size: 13px; color: #64748b;">记住用户名</span>
+        </label>
+        <a href="#" class="hover:underline transition-colors" style="font-size: 13px; color: #1e40af;">忘记密码？</a>
+      </div>
+
+      <!-- 登录按钮 -->
+      <button
+        type="submit"
+        data-dom-id="btn-login"
+        class="btn-login w-full text-white font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2"
+        style="height: 44px; font-size: 15px; font-weight: 500; background-color: #1e40af; border-radius: 6px;"
+      >
+        登 录
+      </button>
+
+    </form>
+
+    <!-- 卡片底部版权 -->
+    <div class="mt-8 text-center" style="font-size: 12px; color: #94a3b8;">
+      Copyright © 2026 警务信息中心
+    </div>
+
+  </div>
+
+  <!-- 右下角版本号 -->
+  <div class="fixed bottom-4 right-6 text-white/40" style="font-size: 12px;">
+    v1.0.0
+  </div>
+
+  <script>
+    // 密码显示/隐藏切换
+    document.getElementById('toggle-password').addEventListener('click', function() {
+      const input = document.querySelector('[data-dom-id="input-password"]');
+      const eyeIcon = document.getElementById('eye-icon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        eyeIcon.innerHTML = `
+          <path d="M1 9C1 9 4.5 3 9 3C10.7 3 12.3 3.8 13.6 5.1M17 9C17 9 13.5 15 9 15C7.3 15 5.7 14.2 4.4 12.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 11.5C10.3807 11.5 11.5 10.3807 11.5 9C11.5 7.61929 10.3807 6.5 9 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M2 2L16 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        `;
+      } else {
+        input.type = 'password';
+        eyeIcon.innerHTML = `
+          <path d="M1 9C1 9 4.5 3 9 3C13.5 3 17 9 17 9C17 9 13.5 15 9 15C4.5 15 1 9 1 9Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="9" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+        `;
+      }
+    });
+  </script>
+
+</body>
+</html>

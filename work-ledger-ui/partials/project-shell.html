@@ -1,0 +1,61 @@
+<!-- ============================================================
+     项目共享 Shell：顶部导航栏 + 主内容容器
+     三个页面共用此框架
+     ============================================================ -->
+
+<!-- 顶部导航栏 -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-[var(--color-primary-800)] text-white shadow-md">
+  <div class="h-14 flex items-center justify-between px-6">
+    <!-- 左侧：Logo + 系统名称 -->
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded bg-white/15 flex items-center justify-center">
+        <!-- 警徽图标（SVG） -->
+        <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <h1 class="text-lg font-semibold tracking-wide">警情案件工作台账登记系统</h1>
+    </div>
+
+    <!-- 中间：主导航 -->
+    <nav class="flex items-center gap-1" data-nav="main">
+      <a href="#" data-nav-key="ledger" data-dom-id="nav-ledger-list"
+         class="px-4 py-1.5 rounded-md text-sm font-medium bg-white/15 text-white transition-colors">
+        台账管理
+      </a>
+      <a href="#" data-nav-key="stats"
+         class="px-4 py-1.5 rounded-md text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors">
+        统计分析
+      </a>
+      <a href="#" data-nav-key="settings"
+         class="px-4 py-1.5 rounded-md text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white transition-colors">
+        系统设置
+      </a>
+    </nav>
+
+    <!-- 右侧：用户信息 -->
+    <div class="flex items-center gap-3">
+      <button class="p-2 rounded-md text-white/80 hover:bg-white/10 hover:text-white transition-colors" title="通知">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+      </button>
+      <div class="flex items-center gap-2 pl-3 border-l border-white/20">
+        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-medium">
+          管
+        </div>
+        <span class="text-sm">管理员</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- 主内容区域占位（各页面填充此 slot） -->
+<!-- SLOT: mainContent -->
+<!-- SLOT_END: mainContent -->
+
+<!-- 全局 Toast 容器（预留） -->
+<div id="globalToastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>

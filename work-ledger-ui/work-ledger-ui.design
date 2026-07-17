@@ -1,0 +1,133 @@
+{
+  "data": [
+    {
+      "id": "page-login",
+      "title": "登录页",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1784163720000,
+      "canvasData": {
+        "x": 0,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/login.html",
+        "interactions": [
+          {
+            "domId": "btn-login",
+            "targetPageId": "page-ledger-list",
+            "transitionLabel": "登录"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-ledger-list",
+      "title": "台账列表页",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1784103120000,
+      "canvasData": {
+        "x": 620,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/ledger-list.html",
+        "interactions": [
+          {
+            "domId": "btn-add-ledger",
+            "targetPageId": "page-ledger-form",
+            "transitionLabel": "新增台账"
+          },
+          {
+            "domId": "link-ledger-detail",
+            "targetPageId": "page-ledger-detail",
+            "transitionLabel": "查看详情"
+          },
+          {
+            "domId": "btn-view-ledger",
+            "targetPageId": "page-ledger-detail",
+            "hideEdge": true,
+            "transitionLabel": "查看"
+          },
+          {
+            "domId": "btn-edit-ledger",
+            "targetPageId": "page-ledger-form",
+            "hideEdge": true,
+            "transitionLabel": "编辑"
+          },
+          {
+            "domId": "btn-logout",
+            "targetPageId": "page-login",
+            "hideEdge": true,
+            "transitionLabel": "退出登录"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-ledger-form",
+      "title": "新增/编辑台账页",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1784103121000,
+      "canvasData": {
+        "x": 1860,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/ledger-form.html",
+        "interactions": [
+          {
+            "domId": "btn-cancel-form",
+            "targetPageId": "page-ledger-list",
+            "hideEdge": true,
+            "transitionLabel": "取消返回"
+          },
+          {
+            "domId": "btn-submit-form",
+            "targetPageId": "page-ledger-list",
+            "hideEdge": true,
+            "transitionLabel": "提交保存"
+          }
+        ]
+      }
+    },
+    {
+      "id": "page-ledger-detail",
+      "title": "台账详情页",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1784103122000,
+      "canvasData": {
+        "x": 1240,
+        "y": 0,
+        "group": 0
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/ledger-detail.html",
+        "interactions": [
+          {
+            "domId": "btn-back-list",
+            "targetPageId": "page-ledger-list",
+            "hideEdge": true,
+            "transitionLabel": "返回列表"
+          },
+          {
+            "domId": "btn-edit-from-detail",
+            "targetPageId": "page-ledger-form",
+            "transitionLabel": "编辑台账"
+          }
+        ]
+      }
+    }
+  ],
+  "config": {
+    "autoLayout": true,
+    "deviceType": "desktop",
+    "projectName": "警情案件工作台账登记系统"
+  }
+}

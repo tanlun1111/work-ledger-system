@@ -1,0 +1,428 @@
+{% extends "base.html" %}
+{% block title %}台账详情 - 警情案件工作台账登记系统{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-nav">
+  <a href="/"><i class="bi bi-chevron-left me-1"></i>台账管理</a>
+  <span>/</span>
+  <span class="current">台账详情</span>
+</div>
+
+<div class="d-flex align-items-start justify-content-between mb-4">
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <h2 class="mb-0 fs-4 fw-bold" style="color:var(--bs-primary)">{{ record.serial_no }}</h2>
+      {% if record.is_closed %}
+        <span class="badge-status badge-closed">已办结</span>
+      {% else %}
+        <span class="badge-status badge-open">未办结</span>
+      {% endif %}
+      {% if record.is_escalated %}
+        <span class="badge-status badge-escalated">已提级</span>
+      {% else %}
+        <span class="badge-status badge-not-escalated">未提级</span>
+      {% endif %}
+    </div>
+    <p class="text-secondary mb-0" style="font-size:13px">警情案件台账详情</p>
+  </div>
+  <div class="d-flex gap-2 flex-shrink-0">
+    <a href="/" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
+      <i class="bi bi-chevron-left"></i>返回列表
+    </a>
+    <button class="btn btn-primary btn-sm d-flex align-items-center gap-1" onclick="openLedgerForm({{ record.id }})">
+      <i class="bi bi-pencil"></i>编辑
+    </button>
+  </div>
+</div>
+
+<div id="detailContent">
+{% if record %}
+  <div class="detail-card">
+    <div class="card-title-bar">
+      <div class="accent-bar"></div>
+      <h5 class="mb-0">&ensp;基本信息</h5>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-lg-4 col-md-6">
+        <div class="detail-label">序号</div>
+        <div class="detail-value">{{ record.serial_no }}</div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="detail-label">直守人员</div>
+        <div class="detail-value">{{ record.duty_officer }}</div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="detail-label">涉及人员</div>
+        <div class="detail-value">{{ record.personnel or '－' }}</div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="detail-label">发生时间</div>
+        <div class="detail-value">{{ record.incident_time }}</div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="detail-label">信息来源</div>
+        <div class="detail-value">{{ record.info_source }}</div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="detail-label">辖区</div>
+        <div class="detail-value">{{ record.jurisdiction }}</div>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <div class="detail-label">案件类别</div>
+        <div class="detail-value">{{ record.case_category }}</div>
+      </div>
+    </div>
+    <div style="border-top:1px solid #f1f5f9;padding-top:12px">
+      <div class="detail-label">案件基本情况</div>
+      <div class="detail-text">{{ record.case_basic_info }}</div>
+    </div>
+  </div>
+
+  <div class="detail-card">
+    <div class="card-title-bar">
+      <div class="accent-bar"></div>
+      <h5 class="mb-0">&ensp;现场处置</h5>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-lg-6">
+        <div class="detail-label">现场处置人员</div>
+        <div class="detail-value">{{ record.on_site_personnel or '－' }}</div>
+      </div>
+    </div>
+    <div style="border-top:1px solid #f1f5f9;padding-top:12px">
+      <div class="detail-label">现场开展处置情况</div>
+      {% if record.on_site_handling %}
+        <div class="detail-text">{{ record.on_site_handling }}</div>
+      {% else %}
+        <div class="detail-empty">暂无</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="detail-card">
+    <div class="card-title-bar">
+      <div class="accent-bar"></div>
+      <h5 class="mb-0">&ensp;研判分析</h5>
+    </div>
+    <div class="mb-3">
+      <div class="detail-label">研判情况</div>
+      {% if record.analysis_situation %}
+        <div class="detail-text">{{ record.analysis_situation }}</div>
+      {% else %}
+        <div class="detail-empty">暂无</div>
+      {% endif %}
+    </div>
+    <div style="border-top:1px solid #f1f5f9;padding-top:12px">
+      <div class="detail-label mb-3">研判图片（{{ record.images.count() }} 张）</div>
+      {% set img_list = record.images.all() %}
+      {% if img_list %}
+        <div class="detail-image-grid">
+          {% for img in img_list %}
+            <div class="detail-image-item" onclick="openImageViewer('/api/ledger/{{ record.id }}/images/{{ img.uuid_filename }}')">
+              <img src="/api/ledger/{{ record.id }}/images/{{ img.uuid_filename }}" alt="研判图片 {{ loop.index }}">
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="detail-empty">暂无图片</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="detail-card">
+    <div class="card-title-bar">
+      <div class="accent-bar"></div>
+      <h5 class="mb-0">&ensp;闭环与交接</h5>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-lg-4">
+        <div class="detail-label">闭环情况</div>
+        {% if record.closure_status %}
+          <div class="detail-text">{{ record.closure_status }}</div>
+        {% else %}
+          <div class="detail-empty">待闭环</div>
+        {% endif %}
+      </div>
+      <div class="col-lg-4">
+        <div class="detail-label">后续移交跟进</div>
+        {% if record.follow_up %}
+          <div class="detail-text">{{ record.follow_up }}</div>
+        {% else %}
+          <div class="detail-empty">暂无</div>
+        {% endif %}
+      </div>
+      <div class="col-lg-4">
+        <div class="detail-label">人员交接</div>
+        {% if record.handover %}
+          <div class="detail-text">{{ record.handover }}</div>
+        {% else %}
+          <div class="detail-empty">暂无</div>
+        {% endif %}
+      </div>
+    </div>
+    <div style="border-top:1px solid #f1f5f9;padding-top:12px" class="d-flex justify-content-between">
+      <span class="text-secondary" style="font-size:12px">创建时间：{{ record.created_at }}</span>
+      <span class="text-secondary" style="font-size:12px">更新时间：{{ record.updated_at }}</span>
+    </div>
+  </div>
+{% else %}
+  <div class="detail-card">
+    <div class="empty-state">
+      <div class="empty-icon"><i class="bi bi-file-earmark-x"></i></div>
+      <div class="empty-text">台账记录不存在或已被删除</div>
+      <a href="/" class="btn btn-outline-primary btn-sm mt-3">返回列表</a>
+    </div>
+  </div>
+{% endif %}
+</div>
+
+<div style="height:3rem"></div>
+
+{% include '_ledger_form_modal.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function modalForm() {
+  return {
+    isEdit: false,
+    editSerial: '',
+    recordId: null,
+    form: {
+      serial_no: '', duty_officer: '', personnel: '', incident_time: '',
+      info_source: '', jurisdiction: '', case_category: '', case_basic_info: '',
+      on_site_personnel: '', on_site_handling: '', analysis_situation: '',
+      closure_status: '', follow_up: '', handover: '',
+      is_closed: false, is_escalated: false
+    },
+    existingImages: [],
+    newImageFiles: [],
+    infoSources: [],
+    caseCategories: [],
+    errors: {},
+    submitting: false,
+    dirty: false,
+    forceClose: false,
+    bsModal: null,
+
+    async init() {
+      var enums = await enumCache.get();
+      this.infoSources = enums.info_source || [];
+      this.caseCategories = enums.case_category || [];
+    },
+
+    resetForm() {
+      this.isEdit = false;
+      this.editSerial = '';
+      this.recordId = null;
+      this.form = {
+        serial_no: '', duty_officer: '', personnel: '', incident_time: '',
+        info_source: '', jurisdiction: '', case_category: '', case_basic_info: '',
+        on_site_personnel: '', on_site_handling: '', analysis_situation: '',
+        closure_status: '', follow_up: '', handover: '',
+        is_closed: false, is_escalated: false
+      };
+      this.existingImages.forEach(function(f){ if(f.previewUrl) URL.revokeObjectURL(f.previewUrl); });
+      this.existingImages = [];
+      this.newImageFiles.forEach(function(f){ URL.revokeObjectURL(f.previewUrl); });
+      this.newImageFiles = [];
+      this.errors = {};
+      this.dirty = false;
+      this.submitting = false;
+      this.forceClose = false;
+    },
+
+    async openForEdit(recordId) {
+      this.resetForm();
+      this.isEdit = true;
+      this.recordId = recordId;
+      try {
+        var res = await api.get('/api/ledger/' + recordId);
+        var r = res.data;
+        this.editSerial = r.serial_no;
+        this.form.serial_no = r.serial_no || '';
+        this.form.duty_officer = r.duty_officer || '';
+        this.form.personnel = '';
+        this.form.incident_time = r.incident_time ? toDatetimeLocal(r.incident_time) : '';
+        this.form.info_source = r.info_source || '';
+        this.form.jurisdiction = r.jurisdiction || '';
+        this.form.case_category = r.case_category || '';
+        this.form.case_basic_info = r.case_basic_info || '';
+        this.form.on_site_personnel = r.on_site_personnel || '';
+        this.form.on_site_handling = r.on_site_handling || '';
+        this.form.analysis_situation = r.analysis_situation || '';
+        this.form.closure_status = r.closure_status || '';
+        this.form.follow_up = r.follow_up || '';
+        this.form.handover = r.handover || '';
+        this.form.is_closed = !!r.is_closed;
+        this.form.is_escalated = !!r.is_escalated;
+        var images = r.images || [];
+        this.existingImages = images.map(function(img){ return {id:img.id, url:img.url}; });
+      } catch (err) {
+        handleApiError(err, '加载台账数据失败');
+        throw err;
+      }
+    },
+
+    handleClose() {
+      if (this.dirty && !this.submitting) {
+        this.confirmLeave();
+      } else {
+        this.forceClose = true;
+        this.bsModal.hide();
+      }
+    },
+
+    confirmLeave() {
+      var self = this;
+      confirmDialog('提示', '表单数据尚未保存，确定要离开吗？').then(function(ok){
+        if (ok) {
+          self.forceClose = true;
+          self.bsModal.hide();
+          self.resetForm();
+        }
+      });
+    },
+
+    handleDrop(e) {
+      this.addFiles(e.dataTransfer.files);
+    },
+
+    handleFileSelect(e) {
+      this.addFiles(e.target.files);
+      e.target.value = '';
+    },
+
+    addFiles(files) {
+      var totalCount = this.existingImages.length + this.newImageFiles.length;
+      for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        if (totalCount >= 9) { Toast.show('最多上传 9 张图片', 'warning'); break; }
+        var err = validateImageFile(file);
+        if (err) { Toast.show(err, 'warning'); continue; }
+        file.previewUrl = URL.createObjectURL(file);
+        this.newImageFiles.push(file);
+        totalCount++;
+        this.dirty = true;
+      }
+    },
+
+    removeExisting(img) {
+      if (!this.recordId) return;
+      var self = this;
+      api.delete('/api/ledger/' + this.recordId + '/images/' + img.id)
+        .then(function(){
+          self.existingImages = self.existingImages.filter(function(e){return e.id !== img.id;});
+          self.dirty = true;
+        })
+        .catch(function(err){ handleApiError(err, '删除图片失败'); });
+    },
+
+    removeNew(idx) {
+      URL.revokeObjectURL(this.newImageFiles[idx].previewUrl);
+      this.newImageFiles.splice(idx, 1);
+      this.dirty = true;
+    },
+
+    validate() {
+      this.errors = {};
+      if (!this.form.duty_officer || !this.form.duty_officer.trim()) {
+        this.errors.duty_officer = '请输入直守人员';
+      }
+      if (!this.form.incident_time) {
+        this.errors.incident_time = '请选择发生时间';
+      }
+      if (!this.form.info_source) {
+        this.errors.info_source = '请选择信息来源';
+      }
+      if (!this.form.jurisdiction || !this.form.jurisdiction.trim()) {
+        this.errors.jurisdiction = '请输入辖区';
+      }
+      if (!this.form.case_category) {
+        this.errors.case_category = '请选择案件类别';
+      }
+      if (!this.form.case_basic_info || !this.form.case_basic_info.trim()) {
+        this.errors.case_basic_info = '请输入案件基本情况';
+      }
+      return Object.keys(this.errors).length === 0;
+    },
+
+    async submit() {
+      if (!this.validate()) {
+        var firstErr = this.bsModal._element.querySelector('.is-invalid');
+        if (firstErr) firstErr.scrollIntoView({behavior:'smooth',block:'center'});
+        return;
+      }
+      this.submitting = true;
+      this.errors = {};
+
+      var body = {
+        serial_no: this.form.serial_no,
+        duty_officer: this.form.duty_officer,
+        personnel: this.form.personnel,
+        incident_time: this.form.incident_time ? fromDatetimeLocal(this.form.incident_time) : '',
+        info_source: this.form.info_source,
+        jurisdiction: this.form.jurisdiction,
+        case_category: this.form.case_category,
+        case_basic_info: this.form.case_basic_info,
+        on_site_personnel: this.form.on_site_personnel,
+        on_site_handling: this.form.on_site_handling,
+        analysis_situation: this.form.analysis_situation,
+        closure_status: this.form.closure_status,
+        follow_up: this.form.follow_up,
+        handover: this.form.handover,
+        is_closed: this.form.is_closed ? 1 : 0,
+        is_escalated: this.form.is_escalated ? 1 : 0
+      };
+
+      try {
+        var res;
+        if (this.recordId) {
+          res = await api.patch('/api/ledger/' + this.recordId, body);
+        } else {
+          res = await api.post('/api/ledger', body);
+        }
+
+        var ledgerId = this.recordId || res.data.id;
+
+        if (this.newImageFiles.length > 0) {
+          for (var i = 0; i < this.newImageFiles.length; i++) {
+            await api.postFormData('/api/ledger/' + ledgerId + '/images', this.newImageFiles[i]);
+          }
+        }
+
+        Toast.show(this.recordId ? '台账更新成功' : '台账 ' + (res.data.serial_no || '') + ' 创建成功');
+        this.dirty = false;
+        this.forceClose = true;
+        this.bsModal.hide();
+        this.resetForm();
+        window.location.reload();
+      } catch (err) {
+        if (err.code === 400) {
+          Toast.show(err.message || '请检查表单数据', 'error');
+        } else {
+          handleApiError(err, '保存失败，请稍后重试');
+        }
+      }
+      this.submitting = false;
+    }
+  };
+}
+
+window.openLedgerForm = function(recordId) {
+  var el = document.getElementById('ledgerFormModal');
+  if (!el || !el.__x) { setTimeout(function(){ openLedgerForm(recordId); }, 100); return; }
+  var comp = el.__x.$data;
+  if (recordId) {
+    comp.openForEdit(recordId).then(function(){
+      comp.bsModal.show();
+    }).catch(function(){
+      // 加载失败，不弹出
+    });
+  } else {
+    comp.resetForm();
+    comp.bsModal.show();
+  }
+};
+</script>
+{% endblock %}
