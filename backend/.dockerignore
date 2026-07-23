@@ -1,0 +1,12 @@
+__pycache__
+*.pyc
+*.pyo
+.git
+uploads/*
+!uploads/tmp/.gitkeep
+*.db
+.env
+venv
+.venv
+deploy
+*.md

@@ -9,6 +9,10 @@ MYSQL_HOST = os.environ.get("MYSQL_HOST", "localhost")
 MYSQL_PORT = os.environ.get("MYSQL_PORT", "3306")
 MYSQL_BASE = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}"
 
+# 数据库名通过环境变量控制（Docker 默认 work_ledger）
+_DB_DEV = os.environ.get("MYSQL_DATABASE", "work_ledger_dev") if os.environ.get("FLASK_ENV") != "production" else os.environ.get("MYSQL_DATABASE", "work_ledger")
+_DB_PROD = os.environ.get("MYSQL_DATABASE", "work_ledger")
+
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "change-me-in-production")
@@ -20,6 +24,7 @@ class Config:
     UPLOAD_TMP_FOLDER = os.path.join(UPLOAD_FOLDER, "tmp")
     ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
     SINGLE_IMAGE_MAX_SIZE = 10 * 1024 * 1024
+    ATTACHMENT_MAX_SIZE = 100 * 1024 * 1024
 
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
@@ -28,12 +33,12 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = f"{MYSQL_BASE}/work_ledger_dev?charset=utf8mb4"
+    SQLALCHEMY_DATABASE_URI = f"{MYSQL_BASE}/{_DB_DEV}?charset=utf8mb4"
 
 
 class ProductionConfig(Config):
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = f"{MYSQL_BASE}/work_ledger?charset=utf8mb4"
+    SQLALCHEMY_DATABASE_URI = f"{MYSQL_BASE}/{_DB_PROD}?charset=utf8mb4"
 
 
 config_map = {

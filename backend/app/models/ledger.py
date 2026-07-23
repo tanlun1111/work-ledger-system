@@ -83,6 +83,7 @@ class WorkLedger(BaseModel):
                     "uuid_filename": img.uuid_filename,
                     "original_name": img.original_name,
                     "file_size": img.file_size,
+                    "mime_type": img.mime_type,
                     "sort_order": img.sort_order,
                     "url": f"/api/ledger/{self.id}/images/{img.uuid_filename}",
                 }

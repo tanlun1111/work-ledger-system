@@ -4,6 +4,41 @@
 {% block extra_css %}
 <style>
   .form-container { max-width: 1600px; margin: 0 auto; }
+  .flow-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    background: #fafbfc;
+    transition: box-shadow 0.15s;
+  }
+  .flow-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .flow-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .flow-card-body {
+    font-size: 13px;
+    color: #555;
+  }
+  .flow-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #888;
+  }
+  .flow-inline-form {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 10px;
+    background: #fdfdfd;
+  }
 </style>
 {% endblock %}
 
@@ -22,11 +57,11 @@
   <div class="accordion" id="formAccordion">
     <div class="accordion-item">
       <h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelBasic"><span class="text-danger me-1">*</span>基本信息</button></h2>
-      <div id="panelBasic" class="accordion-collapse collapse show" data-bs-parent="#formAccordion">
+      <div id="panelBasic" class="accordion-collapse collapse show">
         <div class="accordion-body">
           <div class="row g-3">
             <div class="col-md-4">
-              <label class="form-label small">直守人员 <span class="text-danger">*</span></label>
+              <label class="form-label small">值守人员 <span class="text-danger">*</span></label>
               <input type="text" class="form-control form-control-sm" x-model="form.duty_officer" maxlength="50">
               <div class="text-danger small" x-show="errors.duty_officer" x-text="errors.duty_officer"></div>
             </div>
@@ -74,8 +109,8 @@
     </div>
 
     <div class="accordion-item">
-      <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelSite">现场处置</button></h2>
-      <div id="panelSite" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+      <h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelSite">现场处置</button></h2>
+      <div id="panelSite" class="accordion-collapse collapse show">
         <div class="accordion-body">
           <div class="row g-3">
             <div class="col-md-6"><label class="form-label small">现场处置人员</label><input type="text" class="form-control form-control-sm" x-model="form.on_site_personnel" maxlength="200" autocomplete="off"></div>
@@ -85,33 +120,130 @@
       </div>
     </div>
 
+    <!-- 侦察流 -->
     <div class="accordion-item">
-      <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelAnalysis">研判分析</button></h2>
-      <div id="panelAnalysis" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+      <h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelFlow">侦察流 <span class="badge bg-info ms-2" x-text="flowCount" style="font-size:11px"></span></button></h2>
+      <div id="panelFlow" class="accordion-collapse collapse show">
         <div class="accordion-body">
-          <div class="mb-3"><label class="form-label small">研判情况</label><textarea class="form-control form-control-sm" rows="4" x-model="form.analysis_situation" maxlength="5000"></textarea></div>
-          <label class="form-label small">研判图片</label>
-          <div class="upload-zone mb-3" @click="$refs.fileInput.click()" @dragover.prevent @drop.prevent="handleDrop">
-            <i class="bi bi-cloud-upload fs-3 text-muted"></i>
-            <p class="mb-1 small">点击或拖拽图片到此区域上传</p>
-            <p class="text-muted" style="font-size:11px">支持 jpg/png/gif/webp，单文件不超过 10MB，最多 9 张</p>
-            <input type="file" x-ref="fileInput" class="d-none" accept="image/jpeg,image/png,image/gif,image/webp" multiple @change="addImages">
+          <!-- 接警编号自动关联 -->
+          <div class="mb-3">
+            <label class="form-label small text-muted">关联接警编号</label>
+            <input type="text" class="form-control form-control-sm bg-light" style="max-width:250px" :value="currentSerialNo" disabled>
           </div>
-          <div class="image-preview-grid" x-show="allImages.length > 0">
-            <template x-for="(img, idx) in allImages" :key="img.key">
-              <div class="image-preview-item">
-                <img :src="img.url" alt="">
-                <button class="btn-remove" @click="removeImage(img, idx)"><i class="bi bi-x"></i></button>
+
+          <!-- 已有侦察流列表 -->
+          <template x-for="(flow, idx) in flows" :key="flow._key || flow.id">
+            <div class="flow-card">
+              <div class="flow-card-header">
+                <span class="badge bg-primary" x-text="flow.flow_type"></span>
+                <span class="badge bg-secondary" x-show="flow.sub_type" x-text="flow.sub_type"></span>
+                <span class="text-muted" style="font-size:11px" x-show="flow.created_at" x-text="flow.created_at"></span>
               </div>
-            </template>
+              <div class="flow-card-body" x-show="flow.content">
+                <strong class="small">内容：</strong><span x-text="flow.content"></span>
+              </div>
+              <div class="flow-card-body" x-show="flow.feedback_result">
+                <strong class="small">反馈：</strong><span x-text="flow.feedback_result"></span>
+              </div>
+              <div class="flow-card-footer">
+                <span x-show="flow.attachments && flow.attachments.length > 0">
+                  <i class="bi bi-paperclip"></i> <span x-text="flow.attachments.length"></span> 个附件
+                </span>
+                <span x-show="!flow.attachments || flow.attachments.length === 0" class="text-muted">无附件</span>
+                <div class="ms-auto">
+                  <button class="btn btn-outline-primary btn-sm me-1" @click="editFlow(idx)"><i class="bi bi-pencil"></i></button>
+                  <button class="btn btn-outline-danger btn-sm" @click="removeFlow(idx)"><i class="bi bi-trash"></i></button>
+                </div>
+              </div>
+            </div>
+          </template>
+          <p class="text-muted small mb-0" x-show="flows.length === 0 && !showFlowForm">暂无侦察流记录，点击下方按钮添加</p>
+
+          <!-- 内联编辑表单 -->
+          <div class="flow-inline-form" x-show="showFlowForm">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <strong class="small" x-text="editingFlowIdx >= 0 ? '编辑侦察流' : '新增侦察流'"></strong>
+              <button class="btn-close" style="font-size:10px" @click="cancelFlowForm()"></button>
+            </div>
+            <div class="row g-2 mb-2">
+              <div class="col-md-4">
+                <label class="form-label small">类型 <span class="text-danger">*</span></label>
+                <select class="form-select form-select-sm" x-model="flowForm.flow_type">
+                  <option value="">请选择</option>
+                  <option value="一人一档">一人一档</option>
+                  <option value="人像轨迹">人像轨迹</option>
+                  <option value="车辆轨迹">车辆轨迹</option>
+                  <option value="资金查询">资金查询</option>
+                  <option value="JZ查询">JZ查询</option>
+                  <option value="WA查询">WA查询</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small">子类型</label>
+                <input type="text" class="form-control form-control-sm" x-model="flowForm.sub_type" placeholder="如：监控调取、人脸比对" maxlength="50">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small">接警编号</label>
+                <input type="text" class="form-control form-control-sm bg-light" :value="currentSerialNo" disabled>
+              </div>
+            </div>
+            <div class="row g-2 mb-2">
+              <div class="col-12">
+                <label class="form-label small">内容 <span class="text-danger">*</span></label>
+                <textarea class="form-control form-control-sm" rows="3" x-model="flowForm.content" placeholder="侦察流具体内容" maxlength="5000"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label small">反馈结果</label>
+                <textarea class="form-control form-control-sm" rows="2" x-model="flowForm.feedback_result" placeholder="侦察反馈结果" maxlength="5000"></textarea>
+              </div>
+            </div>
+            <div>
+              <label class="form-label small">附件</label>
+              <div class="upload-zone mb-2" @click="$refs.flowFileInput.click()" @dragover.prevent @drop.prevent="handleFlowDrop" style="padding:1rem">
+                <i class="bi bi-cloud-upload fs-3 text-muted"></i>
+                <p class="mb-1 small">点击或拖拽文件上传附件</p>
+                <p class="text-muted" style="font-size:11px">单文件不超过 100MB，最多 9 个</p>
+                <input type="file" x-ref="flowFileInput" class="d-none" multiple @change="addFlowFiles">
+              </div>
+              <div class="image-preview-grid" x-show="flowAllAttachments.length > 0">
+                <template x-for="(att, ai) in flowAllAttachments" :key="att.key">
+                  <div class="image-preview-item">
+                    <template x-if="att.mime && att.mime.startsWith('image/')">
+                      <img :src="att.url" alt="">
+                    </template>
+                    <template x-if="!att.mime || !att.mime.startsWith('image/')">
+                      <div class="d-flex flex-column align-items-center justify-content-center w-100 h-100 bg-light rounded text-muted small">
+                        <i class="bi bi-file-earmark fs-3"></i>
+                        <span class="text-truncate px-1" style="max-width:100px" x-text="att.name || '附件'"></span>
+                      </div>
+                    </template>
+                    <button class="btn-remove" @click="removeFlowAttachment(att, ai)"><i class="bi bi-x"></i></button>
+                  </div>
+                </template>
+              </div>
+            </div>
+            <div class="d-flex justify-content-end gap-2 mt-3">
+              <button class="btn btn-secondary btn-sm" @click="cancelFlowForm()">取消</button>
+              <button class="btn btn-primary btn-sm" :disabled="flowSaving" @click="saveFlowForm()">
+                <span x-show="!flowSaving">保存</span>
+                <span x-show="flowSaving"><span class="spinner-border spinner-border-sm me-1"></span>保存中...</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 添加按钮 -->
+          <div class="text-center mt-3" x-show="!showFlowForm">
+            <button class="btn btn-outline-primary" @click="addFlow()">
+              <i class="bi bi-plus-lg me-1"></i>添加侦察流
+            </button>
           </div>
         </div>
       </div>
     </div>
 
     <div class="accordion-item">
-      <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelClose">闭环与交接</button></h2>
-      <div id="panelClose" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+      <h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelClose">闭环与交接</button></h2>
+      <div id="panelClose" class="accordion-collapse collapse show">
         <div class="accordion-body">
           <div class="row g-3">
             <div class="col-12"><label class="form-label small">闭环情况</label><textarea class="form-control form-control-sm" rows="3" x-model="form.closure_status" maxlength="3000"></textarea></div>
@@ -119,13 +251,13 @@
             <div class="col-12"><label class="form-label small">人员交接</label><textarea class="form-control form-control-sm" rows="3" x-model="form.handover" maxlength="2000"></textarea></div>
             <div class="col-md-6">
               <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" x-model="form.is_closed" :true-value="1" :false-value="0">
+                <input class="form-check-input" type="checkbox" :checked="form.is_closed === 1" @change="form.is_closed = $event.target.checked ? 1 : 0">
                 <label class="form-check-label small">是否办结</label>
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" x-model="form.is_escalated" :true-value="1" :false-value="0">
+                <input class="form-check-input" type="checkbox" :checked="form.is_escalated === 1" @change="form.is_escalated = $event.target.checked ? 1 : 0">
                 <label class="form-check-label small">是否提级</label>
               </div>
             </div>
@@ -159,18 +291,38 @@ function formPage() {
       is_closed: 0, is_escalated: 0
     },
     infoSources: [], caseCategories: [], jurisdictions: [],
-    existingImages: [],
-    newImageFiles: [],
     errors: {},
     submitting: false,
 
-    get allImages() {
-      const result = [];
-      for (const img of this.existingImages) {
-        result.push({ key: 'e_' + img.id, url: img.url, id: img.id, type: 'existing' });
+    // ─── 侦察流 ──────────────────────────────────
+    flows: [],
+    showFlowForm: false,
+    editingFlowIdx: -1,
+    flowSaving: false,
+    flowForm: { flow_type: '', sub_type: '', content: '', feedback_result: '' },
+    flowExistingAttachments: [],
+    flowNewFiles: [],
+    flowDeletedAttIds: [], // 编辑时记录被删除的已有附件id
+
+    get currentSerialNo() {
+      if (this.mode === 'edit' && this.recordData) {
+        return this.recordData.serial_no || '';
       }
-      for (let i = 0; i < this.newImageFiles.length; i++) {
-        result.push({ key: 'n_' + i, url: URL.createObjectURL(this.newImageFiles[i]), index: i, type: 'new' });
+      return '（保存后自动生成）';
+    },
+
+    get flowCount() {
+      return this.flows.length;
+    },
+
+    get flowAllAttachments() {
+      const result = [];
+      for (const att of this.flowExistingAttachments) {
+        result.push({ key: 'e_' + att.id, url: att.url, id: att.id, type: 'existing', name: att.original_name || '', mime: att.mime_type || '' });
+      }
+      for (let i = 0; i < this.flowNewFiles.length; i++) {
+        const f = this.flowNewFiles[i];
+        result.push({ key: 'n_' + i, url: URL.createObjectURL(f), index: i, type: 'new', name: f.name, mime: f.type });
       }
       return result;
     },
@@ -180,18 +332,6 @@ function formPage() {
       this.loadEnums();
       if (this.mode === 'edit') {
         this.loadRecord();
-      }
-      if (this.mode === 'add') {
-        setTimeout(() => {
-          this.form.personnel = '';
-          this.form.incident_time = '';
-          this.form.on_site_personnel = '';
-          this.form.on_site_handling = '';
-          this.form.analysis_situation = '';
-          this.form.closure_status = '';
-          this.form.follow_up = '';
-          this.form.handover = '';
-        }, 300);
       }
     },
 
@@ -218,64 +358,199 @@ function formPage() {
         this.form.closure_status = d.closure_status || '';
         this.form.follow_up = d.follow_up || '';
         this.form.handover = d.handover || '';
-        if (d.incident_time) this.form.incident_time = d.incident_time.replace(' ', 'T');
         this.form.info_source = d.info_source || '';
         this.form.jurisdiction = d.jurisdiction || '';
         this.form.case_category = d.case_category || '';
         this.form.case_basic_info = d.case_basic_info || '';
-        this.form.is_closed = +d.is_closed || 0;
-        this.form.is_escalated = +d.is_escalated || 0;
-        this.existingImages = (d.images || []).map(img => ({ id: img.id, url: img.url }));
+        if (d.incident_time) this.form.incident_time = d.incident_time.replace(' ', 'T');
+        // 在 $nextTick 中设置 is_closed/is_escalated，确保复选框正确回填
+        const closedVal = Number(d.is_closed) || 0;
+        const escalatedVal = Number(d.is_escalated) || 0;
+        this.$nextTick(() => {
+          this.form.is_closed = closedVal;
+          this.form.is_escalated = escalatedVal;
+        });
+        // 加载已有侦察流
+        await this.loadFlows();
       } catch (e) {
         Toast.show(e.message, 'error');
       }
-      this.$nextTick(() => {
-        const d = this.recordData || {};
-        this.form.personnel = this.form.personnel || '';
-        this.form.on_site_personnel = this.form.on_site_personnel || '';
-        this.form.on_site_handling = this.form.on_site_handling || '';
-        this.form.analysis_situation = this.form.analysis_situation || '';
-        this.form.closure_status = this.form.closure_status || '';
-        this.form.follow_up = this.form.follow_up || '';
-        this.form.handover = this.form.handover || '';
-        this.form.is_closed = +d.is_closed || 0;
-        this.form.is_escalated = +d.is_escalated || 0;
-      });
     },
 
-    addImages(e) {
+    async loadFlows() {
+      try {
+        const res = await api.get('/api/ledger/' + this.recordId + '/investigation-flows');
+        this.flows = (res.data || []).map(function(f) {
+          f._key = 'flow_' + f.id;
+          return f;
+        });
+      } catch (e) {
+        console.error('加载侦察流失败', e);
+      }
+    },
+
+    // ─── 侦察流操作 ─────────────────────────────
+
+    addFlow() {
+      this.editingFlowIdx = -1;
+      this.flowForm = { flow_type: '', sub_type: '', content: '', feedback_result: '' };
+      this.flowExistingAttachments = [];
+      this.flowNewFiles = [];
+      this.flowDeletedAttIds = [];
+      this.showFlowForm = true;
+    },
+
+    editFlow(idx) {
+      const flow = this.flows[idx];
+      this.editingFlowIdx = idx;
+      this.flowForm = {
+        flow_type: flow.flow_type || '',
+        sub_type: flow.sub_type || '',
+        content: flow.content || '',
+        feedback_result: flow.feedback_result || ''
+      };
+      this.flowExistingAttachments = (flow.attachments || []).map(function(a) {
+        return { id: a.id, url: a.url, original_name: a.original_name, mime_type: a.mime_type };
+      });
+      this.flowNewFiles = [];
+      this.flowDeletedAttIds = [];
+      this.showFlowForm = true;
+    },
+
+    cancelFlowForm() {
+      this.showFlowForm = false;
+      this.editingFlowIdx = -1;
+      // 清理 blob URLs
+      for (const f of this.flowNewFiles) {
+        if (f._blobUrl) URL.revokeObjectURL(f._blobUrl);
+      }
+      this.flowNewFiles = [];
+      this.flowExistingAttachments = [];
+      this.flowDeletedAttIds = [];
+      this.flowForm = { flow_type: '', sub_type: '', content: '', feedback_result: '' };
+    },
+
+    async removeFlow(idx) {
+      if (!confirm('确定删除该侦察流记录吗？')) return;
+      const flow = this.flows[idx];
+      if (this.mode === 'edit' && flow.id) {
+        try {
+          await api.delete('/api/investigation-flow/' + flow.id);
+        } catch (e) {
+          Toast.show(e.message, 'error');
+        }
+      }
+      this.flows.splice(idx, 1);
+    },
+
+    async saveFlowForm() {
+      if (!this.flowForm.flow_type.trim()) { Toast.show('请填写侦察流类型', 'warning'); return; }
+      if (!this.flowForm.content.trim()) { Toast.show('请填写侦察流内容', 'warning'); return; }
+
+      this.flowSaving = true;
+      try {
+        let flowObj = {
+          flow_type: this.flowForm.flow_type.trim(),
+          sub_type: this.flowForm.sub_type.trim(),
+          content: this.flowForm.content.trim(),
+          feedback_result: this.flowForm.feedback_result.trim(),
+          attachments: this.flowExistingAttachments.slice(),
+          _newFiles: this.flowNewFiles.slice(),
+        };
+
+        if (this.mode === 'edit' && this.editingFlowIdx >= 0) {
+          // 编辑已有 flow：先更新 flow 数据，再处理附件
+          const existingFlow = this.flows[this.editingFlowIdx];
+          const flowId = existingFlow.id;
+          // 更新 flow 字段
+          await api.patch('/api/investigation-flow/' + flowId, JSON.stringify({
+            flow_type: flowObj.flow_type,
+            sub_type: flowObj.sub_type,
+            content: flowObj.content,
+            feedback_result: flowObj.feedback_result
+          }));
+          // 删除被移除的附件
+          for (const attId of this.flowDeletedAttIds) {
+            await api.delete('/api/investigation-flow/' + flowId + '/attachments/' + attId).catch(() => {});
+          }
+          // 上传新附件
+          for (const file of flowObj._newFiles) {
+            const fd = new FormData();
+            fd.append('files', file);
+            await api.postFormData('/api/investigation-flow/' + flowId + '/attachments', fd);
+          }
+          // 重新加载 flows
+          await this.loadFlows();
+        } else if (this.mode === 'edit') {
+          // 编辑模式下新增 flow：直接通过 API 创建
+          const res = await api.post('/api/ledger/' + this.recordId + '/investigation-flows', JSON.stringify({
+            flow_type: flowObj.flow_type,
+            sub_type: flowObj.sub_type,
+            content: flowObj.content,
+            feedback_result: flowObj.feedback_result
+          }));
+          const flowId = res.data.id;
+          for (const file of flowObj._newFiles) {
+            const fd = new FormData();
+            fd.append('files', file);
+            await api.postFormData('/api/investigation-flow/' + flowId + '/attachments', fd);
+          }
+          await this.loadFlows();
+        } else {
+          // 新增模式：暂存到本地，与台账一起提交
+          flowObj._key = 'new_' + Math.random().toString(36).substr(2, 9);
+          if (this.editingFlowIdx >= 0) {
+            this.flows[this.editingFlowIdx] = flowObj;
+          } else {
+            this.flows.push(flowObj);
+          }
+        }
+
+        this.showFlowForm = false;
+        this.editingFlowIdx = -1;
+        this.flowForm = { flow_type: '', sub_type: '', content: '', feedback_result: '' };
+        this.flowExistingAttachments = [];
+        this.flowNewFiles = [];
+        this.flowDeletedAttIds = [];
+      } catch (e) {
+        Toast.show(e.message, 'error');
+      } finally {
+        this.flowSaving = false;
+      }
+    },
+
+    addFlowFiles(e) {
       const files = e.target.files;
       if (!files) return;
       for (const f of files) {
-        if (this.allImages.length >= 9) { Toast.show('最多上传 9 张图片', 'warning'); break; }
-        if (f.size > 10 * 1024 * 1024) { Toast.show('文件大小不能超过 10MB', 'warning'); continue; }
-        if (!['image/jpeg','image/png','image/gif','image/webp'].includes(f.type)) { Toast.show('不支持的文件类型', 'warning'); continue; }
-        this.newImageFiles.push(f);
+        if (this.flowAllAttachments.length >= 9) { Toast.show('最多上传 9 个文件', 'warning'); break; }
+        if (f.size > 100 * 1024 * 1024) { Toast.show('文件大小不能超过 100MB', 'warning'); continue; }
+        this.flowNewFiles.push(f);
       }
       e.target.value = '';
     },
 
-    handleDrop(e) {
+    handleFlowDrop(e) {
       if (e.dataTransfer.files) {
-        this.addImages({ target: { files: e.dataTransfer.files, value: '' } });
+        this.addFlowFiles({ target: { files: e.dataTransfer.files, value: '' } });
       }
     },
 
-    removeImage(img) {
-      if (img.type === 'existing') {
-        if (this.mode === 'edit') {
-          api.delete('/api/ledger/' + this.recordId + '/images/' + img.id).catch(() => {});
-        }
-        this.existingImages = this.existingImages.filter(i => i.id !== img.id);
-      } else if (img.type === 'new') {
-        URL.revokeObjectURL(img.url);
-        this.newImageFiles.splice(img.index, 1);
+    removeFlowAttachment(att, idx) {
+      if (att.type === 'existing') {
+        this.flowDeletedAttIds.push(att.id);
+        this.flowExistingAttachments = this.flowExistingAttachments.filter(function(a) { return a.id !== att.id; });
+      } else if (att.type === 'new') {
+        URL.revokeObjectURL(att.url);
+        this.flowNewFiles.splice(att.index, 1);
       }
     },
+
+    // ─── 提交 ───────────────────────────────────
 
     validate() {
       this.errors = {};
-      if (!this.form.duty_officer.trim()) this.errors.duty_officer = '直守人员不能为空';
+      if (!this.form.duty_officer.trim()) this.errors.duty_officer = '值守人员不能为空';
       if (!this.form.incident_time) this.errors.incident_time = '发生时间不能为空';
       if (!this.form.info_source) this.errors.info_source = '请选择信息来源';
       if (!this.form.jurisdiction.trim()) this.errors.jurisdiction = '辖区不能为空';
@@ -304,14 +579,28 @@ function formPage() {
           await api.patch('/api/ledger/' + ledgerId, JSON.stringify(body));
         }
 
-        for (const file of this.newImageFiles) {
-          const fd = new FormData();
-          fd.append('files', file);
-          await api.postFormData('/api/ledger/' + ledgerId + '/images', fd);
+        // 新增模式下保存侦察流（编辑模式下已在 saveFlowForm 中实时保存）
+        if (this.mode === 'add') {
+          for (const flow of this.flows) {
+            const fres = await api.post('/api/ledger/' + ledgerId + '/investigation-flows', JSON.stringify({
+              flow_type: flow.flow_type,
+              sub_type: flow.sub_type,
+              content: flow.content,
+              feedback_result: flow.feedback_result
+            }));
+            const flowId = fres.data.id;
+            if (flow._newFiles && flow._newFiles.length > 0) {
+              for (const file of flow._newFiles) {
+                const fd = new FormData();
+                fd.append('files', file);
+                await api.postFormData('/api/investigation-flow/' + flowId + '/attachments', fd);
+              }
+            }
+          }
         }
 
         Toast.show(this.mode === 'add' ? '台账登记成功' : '台账更新成功');
-        setTimeout(() => { window.location.href = '/'; }, 500);
+        setTimeout(function() { window.location.href = '/'; }, 500);
       } catch (e) {
         Toast.show(e.message, 'error');
       } finally {

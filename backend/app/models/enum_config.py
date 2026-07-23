@@ -14,11 +14,9 @@ class EnumConfig(BaseModel):
 
     DEFAULTS = {
         "info_source": [
-            ("110_report", "110接报"),
-            ("citizen_report", "群众报案"),
-            ("superior_assign", "上级交办"),
-            ("dept_transfer", "其他部门移交"),
-            ("proactive", "主动发现"),
+            ("command_center", "情指中心"),
+            ("brigade_internal", "支队内部"),
+            ("police_station", "派出所"),
             ("other", "其他"),
         ],
         "case_category": [
@@ -37,7 +35,9 @@ class EnumConfig(BaseModel):
         from sqlalchemy import and_
 
         for enum_type, values in cls.DEFAULTS.items():
+            valid_codes = set()
             for i, (code, label) in enumerate(values):
+                valid_codes.add(code)
                 existing = cls.query.filter(
                     and_(cls.enum_type == enum_type, cls.enum_code == code)
                 ).first()
@@ -50,4 +50,14 @@ class EnumConfig(BaseModel):
                         is_active=1,
                     )
                     db.session.add(item)
+                else:
+                    existing.enum_label = label
+                    existing.sort_order = i
+                    existing.is_active = 1
+            # Deactivate entries no longer in defaults
+            stale = cls.query.filter(
+                and_(cls.enum_type == enum_type, ~cls.enum_code.in_(valid_codes))
+            ).all()
+            for s in stale:
+                s.is_active = 0
         db.session.commit()

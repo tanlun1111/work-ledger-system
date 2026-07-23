@@ -39,7 +39,7 @@
           </div>
           <div class="row g-3 mb-3">
             <div class="col-md-4"><div class="text-muted small">序号</div><div class="fw-medium" x-text="record.serial_no"></div></div>
-            <div class="col-md-4"><div class="text-muted small">直守人员</div><div class="fw-medium" x-text="record.duty_officer"></div></div>
+            <div class="col-md-4"><div class="text-muted small">值守人员</div><div class="fw-medium" x-text="record.duty_officer"></div></div>
             <div class="col-md-4"><div class="text-muted small">涉及人员</div><div class="fw-medium" x-text="record.personnel || '-'"></div></div>
             <div class="col-md-4"><div class="text-muted small">发生时间</div><div class="fw-medium" x-text="record.incident_time"></div></div>
             <div class="col-md-4"><div class="text-muted small">信息来源</div><div class="fw-medium" x-text="record.info_source"></div></div>
@@ -72,10 +72,22 @@
           <div class="mb-3"><div class="text-muted small mb-2">研判情况</div><p class="small" x-text="record.analysis_situation || '-'"></p></div>
           <template x-if="record.images && record.images.length > 0">
             <div class="pt-3 border-top">
-              <div class="text-muted small mb-3">研判图片（<span x-text="record.images.length"></span>张）</div>
+              <div class="text-muted small mb-3">研判附件（<span x-text="record.images.length"></span>个）</div>
               <div class="d-flex flex-wrap gap-2">
                 <template x-for="img in record.images" :key="img.id">
-                  <img :src="img.url" class="rounded" style="width:120px;height:120px;object-fit:cover;cursor:pointer" @click="previewImageUrl = img.url; imageModal.show()">
+                  <div>
+                    <template x-if="img.mime_type && img.mime_type.startsWith('image/')">
+                      <img :src="img.url" class="rounded" style="width:120px;height:120px;object-fit:cover;cursor:pointer" @click="previewImageUrl = img.url; imageModal.show()">
+                    </template>
+                    <template x-if="!img.mime_type || !img.mime_type.startsWith('image/')">
+                      <a :href="img.url" :download="img.original_name"
+                         class="d-flex flex-column align-items-center justify-content-center rounded bg-light text-decoration-none text-muted small"
+                         style="width:120px;height:120px">
+                        <i class="bi bi-file-earmark fs-3"></i>
+                        <span class="text-truncate px-1 mt-1" style="max-width:110px;font-size:11px" x-text="img.original_name"></span>
+                      </a>
+                    </template>
+                  </div>
                 </template>
               </div>
             </div>
@@ -102,6 +114,65 @@
           </div>
         </div>
       </div>
+
+      <!-- 侦察流 -->
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-2">
+              <div class="bg-info rounded-1" style="width:4px;height:20px"></div>
+              <h5 class="card-title mb-0 fw-semibold"><i class="bi bi-diagram-2 me-1"></i>侦察流</h5>
+              <span class="badge bg-info" x-text="flows.length"></span>
+            </div>
+            <button class="btn btn-primary btn-sm" @click="openFlowModal()">
+              <i class="bi bi-plus-lg me-1"></i>新增侦察流
+            </button>
+          </div>
+          <template x-if="flows.length === 0">
+            <p class="text-muted small mb-0">暂无侦察流记录</p>
+          </template>
+          <template x-if="flows.length > 0">
+            <div class="table-responsive">
+              <table class="table table-sm table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width:100px">类型</th>
+                    <th style="width:100px">子类型</th>
+                    <th>内容</th>
+                    <th>反馈结果</th>
+                    <th style="width:100px">附件</th>
+                    <th style="width:130px">创建时间</th>
+                    <th style="width:100px" class="text-end">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="flow in flows" :key="flow.id">
+                    <tr>
+                      <td x-text="flow.flow_type"></td>
+                      <td x-text="flow.sub_type || '-'"></td>
+                      <td><span class="text-truncate d-inline-block" style="max-width:200px" :title="flow.content" x-text="flow.content"></span></td>
+                      <td><span class="text-truncate d-inline-block" style="max-width:200px" :title="flow.feedback_result" x-text="flow.feedback_result || '-'"></span></td>
+                      <td>
+                        <template x-if="flow.attachments && flow.attachments.length > 0">
+                          <span class="small text-primary" x-text="flow.attachments.length + '个'"></span>
+                        </template>
+                        <template x-if="!flow.attachments || flow.attachments.length === 0">
+                          <span class="text-muted small">-</span>
+                        </template>
+                      </td>
+                      <td><small x-text="flow.created_at"></small></td>
+                      <td class="text-end">
+                        <button class="btn btn-outline-primary btn-sm me-1" @click="openFlowModal(flow)"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-outline-danger btn-sm" @click="confirmDeleteFlow(flow)"><i class="bi bi-trash"></i></button>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </template>
+        </div>
+      </div>
     </div>
   </template>
 
@@ -110,6 +181,96 @@
       <div class="modal-content bg-dark">
         <div class="modal-body text-center p-0">
           <img :src="previewImageUrl" class="img-fluid" style="max-height:80vh">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 侦察流编辑弹窗 -->
+  <div class="modal fade" x-ref="flowModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" x-text="editingFlowId ? '编辑侦察流' : '新增侦察流'"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label small">类型 <span class="text-danger">*</span></label>
+              <select class="form-select form-select-sm" x-model="flowForm.flow_type">
+                <option value="">请选择</option>
+                <option value="一人一档">一人一档</option>
+                <option value="人像轨迹">人像轨迹</option>
+                <option value="车辆轨迹">车辆轨迹</option>
+                <option value="资金查询">资金查询</option>
+                <option value="JZ查询">JZ查询</option>
+                <option value="WA查询">WA查询</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small">子类型</label>
+              <input type="text" class="form-control form-control-sm" x-model="flowForm.sub_type" maxlength="50">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label small">接警编号</label>
+              <input type="text" class="form-control form-control-sm" :value="record ? record.serial_no : ''" disabled>
+            </div>
+            <div class="col-12">
+              <label class="form-label small">内容 <span class="text-danger">*</span></label>
+              <textarea class="form-control form-control-sm" rows="3" x-model="flowForm.content" maxlength="5000"></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label small">反馈结果</label>
+              <textarea class="form-control form-control-sm" rows="3" x-model="flowForm.feedback_result" maxlength="5000"></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label small">附件</label>
+              <div class="upload-zone mb-2" @click="$refs.flowFileInput.click()" @dragover.prevent @drop.prevent="handleFlowDrop">
+                <i class="bi bi-cloud-upload fs-3 text-muted"></i>
+                <p class="mb-1 small">点击或拖拽文件上传附件</p>
+                <p class="text-muted" style="font-size:11px">单文件不超过 100MB，最多 9 个</p>
+                <input type="file" x-ref="flowFileInput" class="d-none" multiple @change="addFlowFiles">
+              </div>
+              <div class="image-preview-grid" x-show="flowAllAttachments.length > 0">
+                <template x-for="(att, idx) in flowAllAttachments" :key="att.key">
+                  <div class="image-preview-item">
+                    <template x-if="att.mime && att.mime.startsWith('image/')">
+                      <img :src="att.url" alt="">
+                    </template>
+                    <template x-if="!att.mime || !att.mime.startsWith('image/')">
+                      <div class="d-flex flex-column align-items-center justify-content-center w-100 h-100 bg-light rounded text-muted small">
+                        <i class="bi bi-file-earmark fs-3"></i>
+                        <span class="text-truncate px-1" style="max-width:100px" x-text="att.name || '附件'"></span>
+                      </div>
+                    </template>
+                    <button class="btn-remove" @click="removeFlowAttachment(att, idx)"><i class="bi bi-x"></i></button>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary btn-sm" :disabled="flowSubmitting" @click="saveFlow">
+            <span x-show="!flowSubmitting">保存</span>
+            <span x-show="flowSubmitting"><span class="spinner-border spinner-border-sm me-1"></span>保存中...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 侦察流删除确认弹窗 -->
+  <div class="modal fade" x-ref="flowDeleteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">确认删除</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">确定要删除该侦察流记录吗？</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-danger btn-sm" @click="doDeleteFlow">确认删除</button>
         </div>
       </div>
     </div>
@@ -123,6 +284,7 @@ function detailPage() {
   return {
     recordId: {{ record_id|default(0) }},
     record: null,
+    flows: [],
     loading: false,
     previewImageUrl: '',
     imageModal: null,
@@ -132,6 +294,8 @@ function detailPage() {
       try {
         const res = await api.get('/api/ledger/' + this.recordId);
         this.record = res.data;
+        // 加载侦察流
+        await this.loadFlows();
       } catch (e) {
         Toast.show(e.message, 'error');
         if (e.code === 404) setTimeout(() => { window.location.href = '/'; }, 1500);
@@ -139,7 +303,139 @@ function detailPage() {
         this.loading = false;
         this.$nextTick(() => {
           if (this.$refs.imageModal) this.imageModal = new bootstrap.Modal(this.$refs.imageModal);
+          if (this.$refs.flowModal) this.flowModal = new bootstrap.Modal(this.$refs.flowModal);
+          if (this.$refs.flowDeleteModal) this.flowDeleteModal = new bootstrap.Modal(this.$refs.flowDeleteModal);
         });
+      }
+    },
+
+    async loadFlows() {
+      try {
+        const res = await api.get('/api/ledger/' + this.recordId + '/investigation-flows');
+        this.flows = res.data || [];
+      } catch (e) {}
+    },
+
+    // ─── 侦察流 ──────────────────────────────────
+    editingFlowId: null,
+    flowSubmitting: false,
+    flowForm: { flow_type: '', sub_type: '', content: '', feedback_result: '' },
+    flowExistingAttachments: [],
+    flowNewFiles: [],
+    flowDeletedAttIds: [],
+
+    get flowAllAttachments() {
+      const result = [];
+      for (const att of this.flowExistingAttachments) {
+        result.push({ key: 'e_' + att.id, url: att.url, id: att.id, type: 'existing', name: att.original_name || '', mime: att.mime_type || '' });
+      }
+      for (let i = 0; i < this.flowNewFiles.length; i++) {
+        const f = this.flowNewFiles[i];
+        result.push({ key: 'n_' + i, url: URL.createObjectURL(f), index: i, type: 'new', name: f.name, mime: f.type });
+      }
+      return result;
+    },
+
+    openFlowModal(flow) {
+      if (flow) {
+        this.editingFlowId = flow.id;
+        this.flowForm = {
+          flow_type: flow.flow_type || '',
+          sub_type: flow.sub_type || '',
+          content: flow.content || '',
+          feedback_result: flow.feedback_result || ''
+        };
+        this.flowExistingAttachments = (flow.attachments || []).map(function(a) {
+          return { id: a.id, url: a.url, original_name: a.original_name, mime_type: a.mime_type };
+        });
+      } else {
+        this.editingFlowId = null;
+        this.flowForm = { flow_type: '', sub_type: '', content: '', feedback_result: '' };
+        this.flowExistingAttachments = [];
+      }
+      this.flowNewFiles = [];
+      this.flowDeletedAttIds = [];
+      this.flowModal.show();
+    },
+
+    addFlowFiles(e) {
+      const files = e.target.files;
+      if (!files) return;
+      for (const f of files) {
+        if (this.flowAllAttachments.length >= 9) { Toast.show('最多上传 9 个文件', 'warning'); break; }
+        if (f.size > 100 * 1024 * 1024) { Toast.show('文件大小不能超过 100MB', 'warning'); continue; }
+        this.flowNewFiles.push(f);
+      }
+      e.target.value = '';
+    },
+
+    handleFlowDrop(e) {
+      if (e.dataTransfer.files) {
+        this.addFlowFiles({ target: { files: e.dataTransfer.files, value: '' } });
+      }
+    },
+
+    removeFlowAttachment(att, idx) {
+      if (att.type === 'existing') {
+        this.flowDeletedAttIds.push(att.id);
+        this.flowExistingAttachments = this.flowExistingAttachments.filter(function(a) { return a.id !== att.id; });
+      } else if (att.type === 'new') {
+        URL.revokeObjectURL(att.url);
+        this.flowNewFiles.splice(att.index, 1);
+      }
+    },
+
+    async saveFlow() {
+      if (!this.flowForm.flow_type.trim()) { Toast.show('请填写侦察流类型', 'warning'); return; }
+      if (!this.flowForm.content.trim()) { Toast.show('请填写侦察流内容', 'warning'); return; }
+      this.flowSubmitting = true;
+      try {
+        const data = {
+          flow_type: this.flowForm.flow_type.trim(),
+          sub_type: this.flowForm.sub_type.trim(),
+          content: this.flowForm.content.trim(),
+          feedback_result: this.flowForm.feedback_result.trim()
+        };
+        let flowId = this.editingFlowId;
+        if (flowId) {
+          await api.patch('/api/investigation-flow/' + flowId, JSON.stringify(data));
+          // 删除被移除的附件
+          for (const attId of this.flowDeletedAttIds) {
+            await api.delete('/api/investigation-flow/' + flowId + '/attachments/' + attId).catch(() => {});
+          }
+        } else {
+          const res = await api.post('/api/ledger/' + this.recordId + '/investigation-flows', JSON.stringify(data));
+          flowId = res.data.id;
+        }
+        // 上传新附件
+        for (const file of this.flowNewFiles) {
+          const fd = new FormData();
+          fd.append('files', file);
+          await api.postFormData('/api/investigation-flow/' + flowId + '/attachments', fd);
+        }
+        if (this.flowModal) this.flowModal.hide();
+        Toast.show(flowId ? '侦察流保存成功' : '侦察流添加成功');
+        await this.loadFlows();
+      } catch (e) {
+        Toast.show(e.message, 'error');
+      } finally {
+        this.flowSubmitting = false;
+      }
+    },
+
+    confirmDeleteFlow(flow) {
+      this.deleteFlowId = flow.id;
+      this.flowDeleteModal.show();
+    },
+
+    async doDeleteFlow() {
+      try {
+        await api.delete('/api/investigation-flow/' + this.deleteFlowId);
+        if (this.flowDeleteModal) this.flowDeleteModal.hide();
+        Toast.show('侦察流已删除');
+        await this.loadFlows();
+      } catch (e) {
+        Toast.show(e.message, 'error');
       }
     }
   };

@@ -79,6 +79,8 @@ def create_app(config_name="development"):
         from app.models.enum_config import EnumConfig
         from app.models.user import User
         from app.models.police_station import PoliceStation
+        from app.models.investigation_flow import InvestigationFlow
+        from app.models.investigation_flow_attachment import InvestigationFlowAttachment
         db.create_all()
         EnumConfig.init_defaults()
         User.init_default_admin()

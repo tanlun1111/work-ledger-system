@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: ledger_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ledger_root_2024
+      MYSQL_DATABASE: work_ledger
+      MYSQL_USER: ledger_user
+      MYSQL_PASSWORD: ledger_pass_2024
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: ./backend
+    container_name: ledger_app
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_ENV: production
+      SECRET_KEY: change-me-to-a-random-string-in-production
+      MYSQL_HOST: db
+      MYSQL_PORT: "3306"
+      MYSQL_USER: ledger_user
+      MYSQL_PASSWORD: ledger_pass_2024
+      MYSQL_DATABASE: work_ledger
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
+  uploads_data:

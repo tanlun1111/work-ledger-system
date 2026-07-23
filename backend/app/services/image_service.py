@@ -5,7 +5,7 @@ from app.models.ledger_image import LedgerImage
 from app.utils import upload as upload_utils
 
 
-def upload_images(ledger_id, files):
+def upload_attachments(ledger_id, files):
     uploaded = []
     saved_names = []
 
@@ -18,7 +18,7 @@ def upload_images(ledger_id, files):
 
         safe_name, tmp_path = upload_utils.save_to_tmp(file)
         size = os.path.getsize(tmp_path)
-        mime_type = file.content_type
+        mime_type = file.content_type or "application/octet-stream"
 
         try:
             image = LedgerImage(
@@ -49,10 +49,10 @@ def upload_images(ledger_id, files):
     return uploaded
 
 
-def delete_image(ledger_id, image_id):
+def delete_attachment(ledger_id, image_id):
     image = LedgerImage.query.filter_by(id=image_id, ledger_id=ledger_id).first()
     if not image:
-        raise FileNotFoundError("图片不存在")
+        raise FileNotFoundError("附件不存在")
 
     safe_name = image.uuid_filename
     db.session.delete(image)
@@ -61,10 +61,10 @@ def delete_image(ledger_id, image_id):
     upload_utils.delete_file(safe_name)
 
 
-def get_image_path(ledger_id, uuid_filename):
+def get_attachment_path(ledger_id, uuid_filename):
     image = LedgerImage.query.filter_by(ledger_id=ledger_id, uuid_filename=uuid_filename).first()
     if not image:
-        raise FileNotFoundError("图片不存在")
+        raise FileNotFoundError("附件不存在")
 
     file_path = os.path.join(
         current_app.config["UPLOAD_FOLDER"], uuid_filename
@@ -77,6 +77,13 @@ def get_image_path(ledger_id, uuid_filename):
         if os.path.exists(tmp_path):
             file_path = tmp_path
         else:
-            raise FileNotFoundError("图片文件不存在")
+            raise FileNotFoundError("附件文件不存在")
 
-    return file_path, image.mime_type
+    return file_path, image.mime_type, image.original_name
+
+
+def get_ledger_attachments(ledger_id):
+    images = LedgerImage.query.filter_by(ledger_id=ledger_id).order_by(
+        LedgerImage.sort_order, LedgerImage.id
+    ).all()
+    return images
