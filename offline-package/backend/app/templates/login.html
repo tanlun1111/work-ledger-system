@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>登录 - 警情案件工作台账登记系统</title>
+  <link href="{{ url_for('static', filename='lib/css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='lib/css/bootstrap-icons.min.css') }}" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .bg-decoration {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0.08;
+    }
+    .bg-decoration.circle-1 {
+      width: 480px; height: 480px;
+      background: #ffffff;
+      top: -160px; left: -120px;
+    }
+    .bg-decoration.circle-2 {
+      width: 360px; height: 360px;
+      background: #ffffff;
+      bottom: -100px; right: -80px;
+    }
+    .bg-decoration.circle-3 {
+      width: 200px; height: 200px;
+      background: #ffffff;
+      top: 40%; right: 10%;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 1.5rem;
+      position: relative;
+      z-index: 10;
+    }
+    .input-group-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      z-index: 5;
+    }
+    .input-with-icon {
+      padding-left: 42px;
+    }
+    .btn-login {
+      height: 44px;
+      font-size: 15px;
+      font-weight: 500;
+      background-color: #1e40af;
+      border: none;
+    }
+    .btn-login:hover {
+      background-color: #1e3a8a;
+    }
+    .version-tag {
+      position: fixed;
+      bottom: 1rem;
+      right: 1.5rem;
+      color: rgba(255,255,255,0.4);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-decoration circle-1"></div>
+  <div class="bg-decoration circle-2"></div>
+  <div class="bg-decoration circle-3"></div>
+
+  <div class="login-card">
+    <div class="card shadow-lg border-0" style="border-radius: 12px;">
+      <div class="card-body px-4 py-5">
+
+        <div class="text-center mb-4 pb-3 border-bottom">
+          <div class="mb-3">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M32 4L8 14V30C8 44.5 18.5 56.5 32 60C45.5 56.5 56 44.5 56 30V14L32 4Z" fill="#1e40af"/>
+              <path d="M32 12L16 19V30C16 41.5 24 51 32 54C40 51 48 41.5 48 30V19L32 12Z" fill="#3b82f6"/>
+              <path d="M32 22L34.5 29.5H42.5L36 34L38.5 41.5L32 37L25.5 41.5L28 34L21.5 29.5H29.5L32 22Z" fill="#fbbf24"/>
+              <path d="M22 46C25 48 28.5 49 32 49C35.5 49 39 48 42 46" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+            </svg>
+          </div>
+          <h4 class="fw-bold mb-1">警情案件工作台账登记系统</h4>
+          <p class="text-muted mb-0" style="font-size: 12px; letter-spacing: 1px;">POLICE CASE LEDGER SYSTEM</p>
+        </div>
+
+        {% if expired %}
+        <div class="alert alert-warning py-2 d-flex align-items-center gap-2 small">
+          <i class="bi bi-exclamation-triangle-fill"></i> 登录已过期，请重新登录
+        </div>
+        {% endif %}
+
+        {% if error %}
+        <div class="alert alert-danger py-2 d-flex align-items-center gap-2 small">
+          <i class="bi bi-exclamation-triangle-fill"></i> {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('auth.login') }}" autocomplete="off">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="mb-3 position-relative">
+            <span class="input-group-icon"><i class="bi bi-person"></i></span>
+            <input type="text" name="login_username" class="form-control input-with-icon"
+                   placeholder="请输入用户名" required autofocus style="height: 44px; font-size: 14px;" autocomplete="off">
+          </div>
+
+          <div class="mb-4 position-relative">
+            <span class="input-group-icon"><i class="bi bi-lock"></i></span>
+            <input type="password" name="password" id="loginPassword" class="form-control input-with-icon"
+                   placeholder="请输入密码" style="height: 44px; font-size: 14px;" required autocomplete="new-password">
+            <button type="button" class="btn btn-link text-muted position-absolute end-0 top-50 translate-middle-y"
+                    onclick="togglePassword()" style="z-index:5; text-decoration:none;">
+              <i class="bi bi-eye" id="eyeIcon"></i>
+            </button>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="rememberUser">
+              <label class="form-check-label small text-muted" for="rememberUser">记住用户名</label>
+            </div>
+            <a href="#" class="small text-decoration-none" style="color: #1e40af;">忘记密码？</a>
+          </div>
+
+          <button type="submit" class="btn btn-login w-100 text-white rounded-2">
+            登 录
+          </button>
+        </form>
+
+        <div class="text-center mt-4" style="font-size: 12px; color: #94a3b8;">
+          Copyright &copy; 2026 警务信息中心
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="version-tag">v1.0.0</div>
+
+  <script>
+    function togglePassword() {
+      var input = document.getElementById('loginPassword');
+      var icon = document.getElementById('eyeIcon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'bi bi-eye';
+      }
+    }
+  </script>
+
+</body>
+</html>
